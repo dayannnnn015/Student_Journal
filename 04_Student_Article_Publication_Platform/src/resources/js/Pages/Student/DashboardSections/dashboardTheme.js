@@ -56,16 +56,16 @@ export function createDashboardTheme(mode) {
 
   return createTheme({
     typography: {
-      fontFamily: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'].join(','),
-      h1: { fontSize: '2rem', fontWeight: 700, lineHeight: 1.2 },
-      h2: { fontSize: '1.5rem', fontWeight: 600, lineHeight: 1.3 },
-      h3: { fontSize: '1.25rem', fontWeight: 600, lineHeight: 1.4 },
-      h4: { fontSize: '1.125rem', fontWeight: 600, lineHeight: 1.4 },
-      body1: { fontSize: '1rem', fontWeight: 400, lineHeight: 1.6 },
-      body2: { fontSize: '0.875rem', fontWeight: 400, lineHeight: 1.6 },
-      caption: { fontSize: '0.75rem', fontWeight: 400, lineHeight: 1.5 },
-      subtitle1: { fontSize: '0.875rem', fontWeight: 500, lineHeight: 1.5 },
-      subtitle2: { fontSize: '0.75rem', fontWeight: 500, lineHeight: 1.5 },
+      fontFamily: 'Georgia, Times, "Times New Roman", serif',
+      h1: { fontSize: '2rem', fontWeight: 900, lineHeight: 1.2, fontFamily: 'Georgia, Times, "Times New Roman", serif' },
+      h2: { fontSize: '1.5rem', fontWeight: 900, lineHeight: 1.3, fontFamily: 'Georgia, Times, "Times New Roman", serif' },
+      h3: { fontSize: '1.25rem', fontWeight: 900, lineHeight: 1.4, fontFamily: 'Georgia, Times, "Times New Roman", serif' },
+      h4: { fontSize: '1.125rem', fontWeight: 900, lineHeight: 1.4, fontFamily: 'Georgia, Times, "Times New Roman", serif' },
+      body1: { fontSize: '1rem', fontWeight: 400, lineHeight: 1.6, fontFamily: 'Georgia, Times, "Times New Roman", serif' },
+      body2: { fontSize: '0.875rem', fontWeight: 400, lineHeight: 1.6, fontFamily: 'Georgia, Times, "Times New Roman", serif' },
+      caption: { fontSize: '0.75rem', fontWeight: 400, lineHeight: 1.5, fontFamily: 'Georgia, Times, "Times New Roman", serif' },
+      subtitle1: { fontSize: '0.875rem', fontWeight: 700, lineHeight: 1.5, fontFamily: 'Georgia, Times, "Times New Roman", serif' },
+      subtitle2: { fontSize: '0.75rem', fontWeight: 700, lineHeight: 1.5, fontFamily: 'Georgia, Times, "Times New Roman", serif' },
     },
     palette: {
       mode,
@@ -93,7 +93,7 @@ export function createDashboardTheme(mode) {
       divider: isDark ? DARK_COLORS.border : COLORS.gray200,
     },
     shape: {
-      borderRadius: 12,
+      borderRadius: 0,
     },
     shadows: [
       'none',
@@ -112,6 +112,7 @@ export function createDashboardTheme(mode) {
             transition: 'background-color 300ms ease, color 300ms ease',
             WebkitFontSmoothing: 'antialiased',
             MozOsxFontSmoothing: 'grayscale',
+            fontFamily: 'Georgia, Times, "Times New Roman", serif',
           },
           '*::-webkit-scrollbar': {
             width: '8px',
@@ -133,7 +134,8 @@ export function createDashboardTheme(mode) {
       MuiPaper: {
         styleOverrides: {
           root: {
-            borderRadius: 12,
+            borderRadius: 0,
+            fontFamily: 'Georgia, Times, "Times New Roman", serif',
             transition: 'background-color 300ms ease, border-color 300ms ease, box-shadow 300ms ease, transform 300ms ease',
           },
         },
@@ -141,10 +143,11 @@ export function createDashboardTheme(mode) {
       MuiButton: {
         styleOverrides: {
           root: {
-            borderRadius: 8,
+            borderRadius: 0,
             textTransform: 'none',
-            fontWeight: 500,
+            fontWeight: 900,
             padding: '8px 16px',
+            fontFamily: 'Georgia, Times, "Times New Roman", serif',
             transition: 'all 200ms ease',
           },
           contained: {
@@ -158,8 +161,9 @@ export function createDashboardTheme(mode) {
       MuiChip: {
         styleOverrides: {
           root: {
-            borderRadius: 6,
-            fontWeight: 500,
+            borderRadius: 0,
+            fontWeight: 900,
+            fontFamily: 'Georgia, Times, "Times New Roman", serif',
           },
         },
       },
@@ -167,6 +171,7 @@ export function createDashboardTheme(mode) {
         styleOverrides: {
           root: {
             transition: 'all 200ms ease',
+            fontFamily: 'Georgia, Times, "Times New Roman", serif',
           },
         },
       },

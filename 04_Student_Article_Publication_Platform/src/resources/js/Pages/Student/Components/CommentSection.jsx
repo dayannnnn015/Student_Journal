@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Box, Typography, Avatar, Stack, Paper, Divider, TextField, Button } from '@mui/material';
+import { Box, Typography, Avatar, Stack, Paper, Divider, TextField, Button, useTheme } from '@mui/material';
 import { COLORS, DARK_COLORS } from '../DashboardSections/dashboardTheme';
 
 export default function CommentSection({
     comments = [],
-    isDark = false,
+    isDark: isDarkProp = false,
     textColor,
     mutedColor,
     onSubmitComment,
@@ -12,11 +12,13 @@ export default function CommentSection({
     currentUserName = 'You',
     errorMessage = '',
 }) {
+    const theme = useTheme();
+    const isDark = theme.palette.mode === 'dark';
     const [commentText, setCommentText] = useState('');
     const [replyingTo, setReplyingTo] = useState(null);
     const [replyText, setReplyText] = useState('');
-    const primaryText = textColor || (isDark ? DARK_COLORS.textPrimary : COLORS.deepPurple);
-    const secondaryText = mutedColor || (isDark ? DARK_COLORS.mediumPurple : COLORS.royalPurple);
+    const primaryText = textColor || theme.palette.text.primary;
+    const secondaryText = mutedColor || theme.palette.text.secondary;
 
     const handleSubmit = () => {
         const value = commentText.trim();
@@ -61,13 +63,20 @@ export default function CommentSection({
     );
 
     return (
-        <Paper elevation={0} sx={{ p: 2, borderRadius: 2, bgcolor: 'background.paper' }}>
-            <Typography variant="h3" sx={{ color: primaryText, fontSize: 20, fontWeight: 600, mb: 2 }}>
+        <Paper elevation={0} sx={{
+            p: 3,
+            borderRadius: 0,
+            bgcolor: theme.palette.background.default,
+            border: `2px solid ${theme.palette.divider}`,
+            fontFamily: 'Georgia, Times, "Times New Roman", serif',
+            boxShadow: isDark ? '0 2px 12px 0 rgba(0,0,0,0.18)' : '0 2px 12px 0 rgba(0,0,0,0.04)',
+        }}>
+            <Typography variant="h3" sx={{ color: theme.palette.text.primary, fontSize: 22, fontWeight: 900, mb: 2, fontFamily: 'Georgia, Times, "Times New Roman", serif', letterSpacing: 0.5, textTransform: 'uppercase' }}>
                 Comments ({comments.length})
             </Typography>
 
             <Stack direction="row" spacing={1.5} sx={{ mb: 3 }}>
-                <Avatar sx={{ width: 36, height: 36, bgcolor: COLORS.softPink }}>
+                <Avatar sx={{ width: 36, height: 36, bgcolor: theme.palette.background.paper, color: theme.palette.text.primary, fontFamily: 'Georgia, Times, "Times New Roman", serif', fontWeight: 700 }}>
                     {(currentUserName || 'U').charAt(0).toUpperCase()}
                 </Avatar>
                 <TextField
@@ -83,15 +92,17 @@ export default function CommentSection({
                         }
                     }}
                     sx={{
+                        fontFamily: 'Georgia, Times, "Times New Roman", serif',
                         '& .MuiOutlinedInput-root': {
-                            borderRadius: 2,
-                            '& fieldset': { borderColor: `${COLORS.mediumPurple}55` },
+                            borderRadius: 0,
+                            fontFamily: 'Georgia, Times, "Times New Roman", serif',
+                            '& fieldset': { borderColor: '#222' },
                             '&.Mui-focused': {
                                 boxShadow: 'none',
                                 outline: 'none',
                             },
                             '&.Mui-focused fieldset': {
-                                borderColor: COLORS.softPink,
+                                borderColor: '#222',
                             },
                             '& input:focus': {
                                 outline: 'none',
@@ -100,21 +111,23 @@ export default function CommentSection({
                     }}
                 />
                 <Button
-                    variant="contained"
+                    variant="outlined"
                     onClick={handleSubmit}
                     disabled={isSubmitting || !commentText.trim()}
                     sx={{
-                        bgcolor: COLORS.softPink,
-                        color: '#fff',
-                        borderRadius: 1.5,
+                        borderColor: theme.palette.text.primary,
+                        color: theme.palette.text.primary,
+                        borderRadius: 0,
                         textTransform: 'none',
                         minWidth: 88,
-                        '&:hover': { bgcolor: COLORS.royalPurple },
+                        fontWeight: 700,
+                        fontFamily: 'Georgia, Times, "Times New Roman", serif',
+                        '&:hover': { bgcolor: theme.palette.text.primary, color: theme.palette.background.paper },
                         '&:focus, &:focus-visible': {
                             outline: 'none',
-                            boxShadow: `0 0 0 2px ${COLORS.softPink}55`,
+                            boxShadow: `0 0 0 2px ${theme.palette.text.primary}22`,
                         },
-                        '&.Mui-disabled': { opacity: 0.6, color: '#fff' },
+                        '&.Mui-disabled': { opacity: 0.6, color: theme.palette.text.disabled },
                     }}
                 >
                     {isSubmitting ? 'Posting...' : 'Post'}
@@ -122,35 +135,35 @@ export default function CommentSection({
             </Stack>
 
             {errorMessage ? (
-                <Typography variant="caption" sx={{ color: COLORS.softPink, display: 'block', mb: 2 }}>
+                <Typography variant="caption" sx={{ color: theme.palette.error.main, display: 'block', mb: 2, fontFamily: 'Georgia, Times, "Times New Roman", serif' }}>
                     {errorMessage}
                 </Typography>
             ) : null}
 
-            <Divider sx={{ mb: 2, borderColor: `${COLORS.mediumPurple}30` }} />
+            <Divider sx={{ mb: 2, borderColor: theme.palette.divider }} />
 
             <Stack spacing={2}>
                 {comments.map((comment) => (
                     <Box key={comment.id}>
                         <Stack direction="row" spacing={1.5}>
-                            <Avatar sx={{ width: 32, height: 32, bgcolor: COLORS.royalPurple }}>
+                            <Avatar sx={{ width: 32, height: 32, bgcolor: theme.palette.background.paper, color: theme.palette.text.primary, fontFamily: 'Georgia, Times, "Times New Roman", serif', fontWeight: 700 }}>
                                 {comment.author?.charAt(0) || 'U'}
                             </Avatar>
                             <Box sx={{ flex: 1 }}>
                                 <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
-                                    <Typography variant="body2" sx={{ fontWeight: 600, color: primaryText }}>
+                                    <Typography variant="body2" sx={{ fontWeight: 900, color: theme.palette.text.primary, fontFamily: 'Georgia, Times, "Times New Roman", serif' }}>
                                         {comment.author || 'Anonymous'}
                                     </Typography>
-                                    <Typography variant="caption" sx={{ color: secondaryText }}>
+                                    <Typography variant="caption" sx={{ color: theme.palette.text.disabled, fontFamily: 'Georgia, Times, "Times New Roman", serif' }}>
                                         • {comment.created_at ? new Date(comment.created_at).toLocaleString() : 'just now'}
                                     </Typography>
                                 </Stack>
-                                <Typography variant="body2" sx={{ color: secondaryText }}>
+                                <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontFamily: 'Georgia, Times, "Times New Roman", serif' }}>
                                     {comment.body}
                                 </Typography>
                                 <Button
                                     size="small"
-                                    sx={{ mt: 0.5, color: COLORS.softPink, textTransform: 'none' }}
+                                    sx={{ mt: 0.5, color: theme.palette.text.primary, textTransform: 'none', fontFamily: 'Georgia, Times, "Times New Roman", serif', fontWeight: 700, borderRadius: 0, border: `1px solid ${theme.palette.text.primary}`, px: 2, py: 0.5, minWidth: 60, fontSize: '0.9rem', '&:hover': { bgcolor: theme.palette.text.primary, color: theme.palette.background.paper } }}
                                     onClick={() => setReplyingTo(comment.id)}
                                 >
                                     Reply
@@ -174,14 +187,14 @@ export default function CommentSection({
                                             variant="contained"
                                             onClick={() => handleReplySubmit(comment.id)}
                                             disabled={isSubmitting || !replyText.trim()}
-                                            sx={{ bgcolor: COLORS.softPink, color: '#fff', borderRadius: 1.5, textTransform: 'none' }}
+                                            sx={{ bgcolor: theme.palette.primary.main, color: theme.palette.primary.contrastText, borderRadius: 1.5, textTransform: 'none' }}
                                         >
                                             {isSubmitting ? 'Posting...' : 'Reply'}
                                         </Button>
                                         <Button
                                             size="small"
                                             onClick={() => { setReplyingTo(null); setReplyText(''); }}
-                                            sx={{ color: COLORS.mediumPurple, textTransform: 'none' }}
+                                            sx={{ color: theme.palette.primary.main, textTransform: 'none' }}
                                         >
                                             Cancel
                                         </Button>

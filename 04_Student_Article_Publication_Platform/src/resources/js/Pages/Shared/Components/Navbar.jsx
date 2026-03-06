@@ -7,13 +7,24 @@ export default function Navbar({ title }) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '0.75rem 1rem',
-                borderBottom: '1px solid #e5e7eb',
+                padding: '1.1rem 1.5rem 0.9rem 1.5rem',
+                borderBottom: '4px double #222',
+                background: '#faf9f6',
+                fontFamily: 'Georgia, Times, "Times New Roman", serif',
+                boxShadow: '0 2px 12px 0 rgba(0,0,0,0.04)',
             }}
         >
-            <h1 style={{ margin: 0, fontSize: '1.25rem' }}>{title}</h1>
-            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                <Link href={route('profile.edit')} style={{ color: '#4b5563', textDecoration: 'none' }}>
+            <h1 style={{
+                margin: 0,
+                fontSize: '2rem',
+                fontWeight: 900,
+                color: '#222',
+                letterSpacing: 1,
+                textTransform: 'uppercase',
+                fontFamily: 'Georgia, Times, "Times New Roman", serif',
+            }}>{title}</h1>
+            <div style={{ display: 'flex', gap: '1.2rem', alignItems: 'center' }}>
+                <Link href={route('profile.edit')} style={{ color: '#222', textDecoration: 'none', fontWeight: 700, fontFamily: 'Georgia, Times, "Times New Roman", serif' }}>
                     Profile
                 </Link>
                 <Link
@@ -21,12 +32,17 @@ export default function Navbar({ title }) {
                     method="post"
                     as="button"
                     style={{
-                        background: '#ef4444',
+                        background: '#222',
                         color: '#fff',
                         border: 'none',
-                        borderRadius: '6px',
-                        padding: '0.4rem 0.75rem',
+                        borderRadius: '0',
+                        padding: '0.5rem 1.1rem',
                         cursor: 'pointer',
+                        fontWeight: 700,
+                        fontFamily: 'Georgia, Times, "Times New Roman", serif',
+                        fontSize: '1rem',
+                        letterSpacing: 0.5,
+                        textTransform: 'uppercase',
                     }}
                 >
                     Log Out

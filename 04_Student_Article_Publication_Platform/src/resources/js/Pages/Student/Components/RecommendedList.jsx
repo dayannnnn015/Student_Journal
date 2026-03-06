@@ -1,4 +1,4 @@
-import { Box, Typography, Stack, Paper, Chip } from '@mui/material';
+import { Box, Typography, Stack, Paper, Chip, useTheme } from '@mui/material';
 import { BookmarkBorder, Visibility, Comment } from '@mui/icons-material';
 import { COLORS, DARK_COLORS } from '../DashboardSections/dashboardTheme';
 
@@ -8,11 +8,13 @@ export default function RecommendedList({
     textColor,
     mutedColor,
 }) {
-    const primaryText = textColor || (isDark ? DARK_COLORS.textPrimary : COLORS.deepPurple);
-    const secondaryText = mutedColor || (isDark ? DARK_COLORS.mediumPurple : COLORS.mediumPurple);
+    const theme = useTheme();
+    // Use theme.palette.mode for dark mode detection, ignore isDark prop to avoid duplicate declaration
+    const primaryText = textColor || theme.palette.text.primary;
+    const secondaryText = mutedColor || theme.palette.text.secondary;
 
     return (
-        <Paper elevation={0} sx={{ p: 2, borderRadius: 2, bgcolor: 'background.paper' }}>
+        <Paper elevation={0} sx={{ p: 2, borderRadius: 2, bgcolor: theme.palette.background.paper }}>
             <Stack spacing={1.5}>
                 {articles.map((article) => (
                     <Box
@@ -20,12 +22,12 @@ export default function RecommendedList({
                         sx={{
                             p: 1.5,
                             borderRadius: 1.5,
-                            border: `1px solid ${COLORS.mediumPurple}30`,
+                            border: `1px solid ${theme.palette.divider}`,
                             cursor: 'pointer',
                             transition: 'all 150ms ease',
                             '&:hover': {
-                                borderColor: COLORS.royalPurple,
-                                bgcolor: `${COLORS.royalPurple}08`,
+                                borderColor: theme.palette.primary.main,
+                                bgcolor: isDark ? theme.palette.action.hover : theme.palette.action.selected,
                             },
                         }}
                     >
@@ -40,8 +42,8 @@ export default function RecommendedList({
                                 sx={{
                                     height: 20,
                                     fontSize: 10,
-                                    bgcolor: COLORS.royalPurple,
-                                    color: '#fff',
+                                    bgcolor: theme.palette.primary.main,
+                                    color: theme.palette.primary.contrastText,
                                     borderRadius: 1,
                                 }}
                             />
