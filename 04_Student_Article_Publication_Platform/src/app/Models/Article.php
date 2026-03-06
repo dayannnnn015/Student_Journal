@@ -25,6 +25,11 @@ class Article extends Model
         'is_public',
         'public_approved_by',
         'public_approved_at',
+        'claimed_by_editor_id',
+        'claimed_at',
+        'rejected_by_editor_id',
+        'rejected_at',
+        'editorial_decision_notes',
     ];
 
     protected function casts(): array
@@ -35,6 +40,8 @@ class Article extends Model
             // Keep public visibility logic type-safe.
             'is_public' => 'boolean',
             'public_approved_at' => 'datetime',
+            'claimed_at' => 'datetime',
+            'rejected_at' => 'datetime',
         ];
     }
 
@@ -72,6 +79,16 @@ class Article extends Model
     {
         // Editor user that approved this article for public browsing.
         return $this->belongsTo(User::class, 'public_approved_by');
+    }
+
+    public function claimedByEditor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'claimed_by_editor_id');
+    }
+
+    public function rejectedByEditor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejected_by_editor_id');
     }
 
     public function stars(): BelongsToMany

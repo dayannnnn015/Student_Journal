@@ -16,6 +16,7 @@ class ArticleStatusSeeder extends Seeder
             ['name' => 'Draft', 'slug' => 'draft'],
             ['name' => 'Submitted', 'slug' => 'submitted'],
             ['name' => 'Revision Requested', 'slug' => 'revision-requested'],
+            ['name' => 'Rejected', 'slug' => 'rejected'],
             ['name' => 'Published', 'slug' => 'published'],
         ];
 

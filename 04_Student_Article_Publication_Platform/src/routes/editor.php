@@ -10,8 +10,11 @@ Route::middleware(['auth', 'verified', 'role:editor'])
     ->as('editor.')
     ->group(function (): void {
         Route::get('/dashboard', [EditorDashboardController::class, 'index'])->name('dashboard');
-        Route::post('/articles/{article}/review', [EditorController::class, 'review'])->middleware('permission:article.review')->name('articles.review');
+        Route::get('/articles/{article}/review', [EditorController::class, 'show'])->name('articles.show');
+        Route::post('/articles/{article}/claim', [EditorController::class, 'claim'])->name('articles.claim');
+        Route::post('/articles/{article}/release', [EditorController::class, 'release'])->name('articles.release');
         Route::post('/articles/{article}/request-revision', [EditorController::class, 'requestRevision'])->middleware('permission:article.request-revision')->name('articles.requestRevision');
+        Route::post('/articles/{article}/reject', [EditorController::class, 'reject'])->name('articles.reject');
         Route::post('/articles/{article}/publish', [EditorController::class, 'publish'])->middleware('permission:article.publish')->name('articles.publish');
         // Separate endpoint so editors can approve public listing after publication.
         Route::post('/articles/{article}/approve-public', [EditorController::class, 'approvePublic'])->middleware('permission:article.approve-public')->name('articles.approvePublic');
