@@ -3,12 +3,12 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function ResetPassword({ token, email }) {
     const { data, setData, post, processing, errors, reset } = useForm({
-        token: token,
-        email: email,
+        token,
+        email,
         password: '',
         password_confirmation: '',
     });
@@ -24,6 +24,12 @@ export default function ResetPassword({ token, email }) {
     return (
         <GuestLayout>
             <Head title="Reset Password" />
+
+            <div className="mb-5 border-b pb-4">
+                <p className="text-xs font-mono uppercase tracking-[0.2em] text-gray-600">Account Recovery</p>
+                <h1 className="mt-1 font-serif text-3xl font-black">Reset Password</h1>
+                <p className="mt-2 text-sm text-gray-700">Create a new password to restore access to your account.</p>
+            </div>
 
             <form onSubmit={submit}>
                 <div>
@@ -60,10 +66,7 @@ export default function ResetPassword({ token, email }) {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel
-                        htmlFor="password_confirmation"
-                        value="Confirm Password"
-                    />
+                    <InputLabel htmlFor="password_confirmation" value="Confirm Password" />
 
                     <TextInput
                         type="password"
@@ -72,18 +75,16 @@ export default function ResetPassword({ token, email }) {
                         value={data.password_confirmation}
                         className="mt-1 block w-full"
                         autoComplete="new-password"
-                        onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
-                        }
+                        onChange={(e) => setData('password_confirmation', e.target.value)}
                     />
 
-                    <InputError
-                        message={errors.password_confirmation}
-                        className="mt-2"
-                    />
+                    <InputError message={errors.password_confirmation} className="mt-2" />
                 </div>
 
-                <div className="mt-4 flex items-center justify-end">
+                <div className="mt-6 flex items-center justify-between">
+                    <Link href={route('login')} className="text-sm text-gray-600 underline hover:text-gray-900">
+                        Back to sign in
+                    </Link>
                     <PrimaryButton className="ms-4" disabled={processing}>
                         Reset Password
                     </PrimaryButton>

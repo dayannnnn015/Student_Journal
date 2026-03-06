@@ -29,7 +29,7 @@ import {
     Lock,
     Warning,
 } from '@mui/icons-material';
-import StudentLayout from '../Shared/Layouts/StudentLayout';
+import StudentLayout from '@/Layouts/StudentLayout';
 import { createDashboardTheme } from './DashboardSections/dashboardTheme';
 
 const COLORS = {
@@ -366,3 +366,4 @@ export default function Settings({ user }) {
         </ThemeProvider>
     );
 }
+

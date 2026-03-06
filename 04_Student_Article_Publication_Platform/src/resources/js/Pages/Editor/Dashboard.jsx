@@ -1,4 +1,4 @@
-import EditorLayout from '../Shared/Layouts/EditorLayout';
+import EditorLayout from '@/Layouts/EditorLayout';
 import ReviewPanel from './Components/ReviewPanel';
 
 export default function Dashboard({ pendingArticles = [], publishedArticles = [] }) {
@@ -10,3 +10,4 @@ export default function Dashboard({ pendingArticles = [], publishedArticles = []
         </EditorLayout>
     );
 }
+

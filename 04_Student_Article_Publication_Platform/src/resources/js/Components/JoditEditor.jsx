@@ -4,10 +4,13 @@ import JoditReact from 'jodit-react';
 export default function JoditEditor({ value = '', onChange, placeholder = 'Start writing...' }) {
     const editor = useRef(null);
 
-    const config = useMemo(() => ({
-        readonly: false,
-        placeholder,
-    }), [placeholder]);
+    const config = useMemo(
+        () => ({
+            readonly: false,
+            placeholder,
+        }),
+        [placeholder],
+    );
 
     return (
         <JoditReact

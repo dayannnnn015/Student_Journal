@@ -3,7 +3,7 @@ import { router, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import { Box, CssBaseline, Stack, useMediaQuery, Fade } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
-import StudentLayout from '../Shared/Layouts/StudentLayout';
+import StudentLayout from '@/Layouts/StudentLayout';
 import DashboardTopNav, { CATEGORIES } from './DashboardSections/DashboardTopNav';
 import FeedSection from './DashboardSections/FeedSection';
 import RightWidgets from './DashboardSections/RightWidgets';
@@ -462,3 +462,4 @@ export default function Dashboard({ articles = [] }) {
     </ThemeProvider>
   );
 }
+

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import WriterLayout from '../Shared/Layouts/WriterLayout';
-import JoditEditor from '../Shared/JoditEditor';
+import WriterLayout from '@/Layouts/WriterLayout';
+import JoditEditor from '@/Components/JoditEditor';
 import DraftList from './Components/DraftList';
 import SubmittedList from './Components/SubmittedList';
 
@@ -24,3 +24,5 @@ export default function Dashboard({ articles = [] }) {
         </WriterLayout>
     );
 }
+
+

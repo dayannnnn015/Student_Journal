@@ -1,4 +1,4 @@
-import EditorLayout from '../Shared/Layouts/EditorLayout';
+import EditorLayout from '@/Layouts/EditorLayout';
 
 export default function RevisionQueue({ revisions = [] }) {
     return (
@@ -12,3 +12,4 @@ export default function RevisionQueue({ revisions = [] }) {
         </EditorLayout>
     );
 }
+

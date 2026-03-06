@@ -25,6 +25,12 @@ export default function Register() {
         <GuestLayout>
             <Head title="Register" />
 
+            <div className="mb-5 border-b pb-4">
+                <p className="text-xs font-mono uppercase tracking-[0.2em] text-gray-600">Create Account</p>
+                <h1 className="mt-1 font-serif text-3xl font-black">Register</h1>
+                <p className="mt-2 text-sm text-gray-700">Join the platform to publish, discuss, and manage your writing journey.</p>
+            </div>
+
             <form onSubmit={submit}>
                 <div>
                     <InputLabel htmlFor="name" value="Name" />
@@ -78,10 +84,7 @@ export default function Register() {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel
-                        htmlFor="password_confirmation"
-                        value="Confirm Password"
-                    />
+                    <InputLabel htmlFor="password_confirmation" value="Confirm Password" />
 
                     <TextInput
                         id="password_confirmation"
@@ -90,19 +93,14 @@ export default function Register() {
                         value={data.password_confirmation}
                         className="mt-1 block w-full"
                         autoComplete="new-password"
-                        onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
-                        }
+                        onChange={(e) => setData('password_confirmation', e.target.value)}
                         required
                     />
 
-                    <InputError
-                        message={errors.password_confirmation}
-                        className="mt-2"
-                    />
+                    <InputError message={errors.password_confirmation} className="mt-2" />
                 </div>
 
-                <div className="mt-4 flex items-center justify-end">
+                <div className="mt-6 flex items-center justify-between">
                     <Link
                         href={route('login')}
                         className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"

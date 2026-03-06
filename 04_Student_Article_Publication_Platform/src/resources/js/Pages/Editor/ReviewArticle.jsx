@@ -1,4 +1,4 @@
-import EditorLayout from '../Shared/Layouts/EditorLayout';
+import EditorLayout from '@/Layouts/EditorLayout';
 import ArticlePreview from './Components/ArticlePreview';
 import RevisionForm from './Components/RevisionForm';
 
@@ -11,3 +11,4 @@ export default function ReviewArticle({ article }) {
         </EditorLayout>
     );
 }
+

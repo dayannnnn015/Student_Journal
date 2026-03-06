@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import JoditEditor from '../../Shared/JoditEditor';
+import JoditEditor from '@/Components/JoditEditor';
 
 export default function ArticleForm({ article }) {
     const [content, setContent] = useState(article?.content ?? '');
@@ -11,3 +11,5 @@ export default function ArticleForm({ article }) {
         </form>
     );
 }
+
+
