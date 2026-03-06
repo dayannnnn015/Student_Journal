@@ -2,9 +2,10 @@ import { Container, CssBaseline, Box } from '@mui/material';
 import { ThemeProvider as MuiThemeProvider, createTheme } from '@mui/material/styles';
 import { useMemo } from 'react';
 import { getThemeColors, useThemeContext } from '@/Components/ThemeContext';
+import RoleFooter from '@/Components/RoleFooter';
 import EditorTopBar from '@/Pages/Editor/Components/EditorTopBar';
 
-export default function EditorLayout({ children, active = 'dashboard', availableRoles = [] }) {
+export default function EditorLayout({ children, active = 'queue', availableRoles = [] }) {
     const { theme: currentTheme } = useThemeContext();
     const colors = getThemeColors(currentTheme);
 
@@ -39,6 +40,7 @@ export default function EditorLayout({ children, active = 'dashboard', available
                     <EditorTopBar active={active} availableRoles={availableRoles} />
                     {children}
                 </Container>
+                <RoleFooter role="editor" />
             </Box>
         </MuiThemeProvider>
     );

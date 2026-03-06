@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Shared;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Category;
+use App\Models\Comment;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -136,11 +137,28 @@ class PublicArticleController extends Controller
     public function comment(Request $request, Article $article): RedirectResponse
     {
         abort_unless($this->canViewArticle($request, $article), 404);
+        $this->authorize('comment', $article);
 
         $validated = $request->validate([
-            'body' => ['required', 'string'],
+            'body' => [
+                'required',
+                'string',
+                'min:2',
+                'max:1000',
+                // Basic anti-spam gate: reject links in first-party comments.
+                'not_regex:/https?:\/\/|www\./i',
+            ],
             'parent_id' => ['nullable', 'exists:comments,id'],
         ]);
+
+        if (!empty($validated['parent_id'])) {
+            $parentComment = Comment::query()->find($validated['parent_id']);
+            if (!$parentComment || (int) $parentComment->article_id !== (int) $article->id) {
+                return back()->withErrors([
+                    'body' => 'Invalid parent comment selection.',
+                ]);
+            }
+        }
 
         $article->comments()->create([
             'user_id' => $request->user()->id,
@@ -174,13 +192,13 @@ class PublicArticleController extends Controller
         if ($request->user()) {
             return [
                 'backUrl' => route('dashboard'),
-                'backLabel' => 'BACK TO HOME',
+                'backLabel' => 'BACK',
             ];
         }
 
         return [
             'backUrl' => '/',
-            'backLabel' => 'BACK TO HOME',
+            'backLabel' => 'BACK',
         ];
     }
 }

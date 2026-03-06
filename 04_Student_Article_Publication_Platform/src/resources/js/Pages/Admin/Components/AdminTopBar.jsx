@@ -26,7 +26,10 @@ import { NEWSPAPER_THEMES, getThemeColors, useThemeContext } from '@/Components/
 const NAV_ITEMS = [
     { key: 'dashboard', label: 'Dashboard', action: () => router.visit('/admin/dashboard') },
     { key: 'users', label: 'Users', action: () => router.visit('/admin/users') },
+    { key: 'applications', label: 'Applications', action: () => router.visit('/admin/writer-applications') },
     { key: 'articles', label: 'Articles', action: () => router.visit('/articles') },
+    { key: 'logs', label: 'Logs', action: () => router.visit('/admin/editorial-logs') },
+    { key: 'audit', label: 'Audit', action: () => router.visit('/admin/audit-logs') },
 ];
 
 export default function AdminTopBar({ active = 'dashboard' }) {

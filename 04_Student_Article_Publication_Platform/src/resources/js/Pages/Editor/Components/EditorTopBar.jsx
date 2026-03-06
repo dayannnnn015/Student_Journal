@@ -20,18 +20,19 @@ import {
     PaletteRounded,
     PublishedWithChangesRounded,
     SwitchAccountRounded,
+    TableViewRounded,
     ViewListRounded,
 } from '@mui/icons-material';
 import { useMemo, useState } from 'react';
 import { NEWSPAPER_THEMES, getThemeColors, useThemeContext } from '@/Components/ThemeContext';
 
 const NAV_ITEMS = [
-    { key: 'dashboard', label: 'Dashboard', href: '/editor/dashboard', icon: <AssignmentTurnedInRounded fontSize="small" /> },
-    { key: 'queue', label: 'Review Queue', href: '/editor/dashboard#review-queue', icon: <ViewListRounded fontSize="small" /> },
-    { key: 'published', label: 'Published', href: '/editor/dashboard#published-articles', icon: <PublishedWithChangesRounded fontSize="small" /> },
+    { key: 'queue', label: 'Review Queue', href: '/editor/dashboard', icon: <ViewListRounded fontSize="small" /> },
+    { key: 'tracking', label: 'Tracking', href: '/editor/tracking', icon: <TableViewRounded fontSize="small" /> },
+    { key: 'published', label: 'Published', href: '/editor/published', icon: <PublishedWithChangesRounded fontSize="small" /> },
 ];
 
-export default function EditorTopBar({ active = 'dashboard', availableRoles = [] }) {
+export default function EditorTopBar({ active = 'queue', availableRoles = [] }) {
     const { auth } = usePage().props;
     const { theme: currentTheme, setTheme: setCurrentTheme } = useThemeContext();
     const colors = getThemeColors(currentTheme);
@@ -46,6 +47,7 @@ export default function EditorTopBar({ active = 'dashboard', availableRoles = []
     }, [availableRoles, auth?.user?.roles]);
 
     const canSwitchToWriter = roles.includes('writer');
+    const activeRole = auth?.active_role || 'editor';
 
     return (
         <Paper
@@ -132,20 +134,21 @@ export default function EditorTopBar({ active = 'dashboard', availableRoles = []
 
             <Menu anchorEl={roleAnchor} open={Boolean(roleAnchor)} onClose={() => setRoleAnchor(null)}>
                 <MenuItem
-                    selected
+                    selected={activeRole === 'editor'}
                     onClick={() => {
                         setRoleAnchor(null);
-                        router.visit('/editor/dashboard');
+                        router.post(route('role.switch'), { role: 'editor' });
                     }}
                 >
                     Switch Role: Editor
                 </MenuItem>
                 <MenuItem
                     disabled={!canSwitchToWriter}
+                    selected={activeRole === 'writer'}
                     onClick={() => {
                         setRoleAnchor(null);
                         if (canSwitchToWriter) {
-                            router.visit('/writer/dashboard');
+                            router.post(route('role.switch'), { role: 'writer' });
                         }
                     }}
                 >

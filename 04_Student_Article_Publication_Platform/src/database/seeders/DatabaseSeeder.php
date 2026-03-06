@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             CategorySeeder::class,
             SubmissionDeadlineSeeder::class,
             UserSeeder::class,
+            EditorReviewQueueSeeder::class,
         ]);
 
         $writer = User::query()->where('email', 'writer@example.com')->first();

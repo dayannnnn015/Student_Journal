@@ -22,14 +22,7 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import {
-    AssignmentIndRounded,
-    ChecklistRounded,
-    PublicRounded,
-    PublishRounded,
-    SearchRounded,
-    VisibilityRounded,
-} from '@mui/icons-material';
+import { AssignmentIndRounded, ChecklistRounded, SearchRounded } from '@mui/icons-material';
 import EditorLayout from '@/Layouts/EditorLayout';
 import { getThemeColors, useThemeContext } from '@/Components/ThemeContext';
 
@@ -42,23 +35,13 @@ function getStatusLabel(article) {
     return article?.status?.name || 'Unknown';
 }
 
-export default function Dashboard({
-    queueArticles = [],
-    myClaimedArticles = [],
-    publishedArticles = [],
-    kpis = {},
-    availableRoles = [],
-}) {
+export default function Dashboard({ queueArticles = [], myClaimedArticles = [], kpis = {}, availableRoles = [] }) {
     const { theme: currentTheme } = useThemeContext();
     const colors = getThemeColors(currentTheme);
     const [queueSearch, setQueueSearch] = useState('');
     const [queueSort, setQueueSort] = useState('submitted_newest');
     const [queuePage, setQueuePage] = useState(0);
-    const [queueRowsPerPage, setQueueRowsPerPage] = useState(5);
-    const [publishedSearch, setPublishedSearch] = useState('');
-    const [publishedSort, setPublishedSort] = useState('published_newest');
-    const [publishedPage, setPublishedPage] = useState(0);
-    const [publishedRowsPerPage, setPublishedRowsPerPage] = useState(5);
+    const [queueRowsPerPage, setQueueRowsPerPage] = useState(10);
 
     const kpiCards = [
         {
@@ -76,14 +59,6 @@ export default function Dashboard({
             helper: 'Entries currently assigned to you',
             icon: <AssignmentIndRounded fontSize="small" />,
             tone: colors.accent,
-        },
-        {
-            key: 'published',
-            title: 'Published Articles',
-            value: Number(kpis.publishedCount || 0),
-            helper: `${Number(kpis.publicApprovedCount || 0)} approved for public site`,
-            icon: <PublishRounded fontSize="small" />,
-            tone: '#2e7d32',
         },
     ];
 
@@ -105,44 +80,22 @@ export default function Dashboard({
         return rows;
     }, [queueArticles, queueSearch, queueSort]);
 
-    const filteredPublished = useMemo(() => {
-        const keyword = publishedSearch.trim().toLowerCase();
-        const rows = publishedArticles.filter((article) => {
-            const title = String(article.title || '').toLowerCase();
-            const author = String(article.author?.name || '').toLowerCase();
-            return !keyword || title.includes(keyword) || author.includes(keyword);
-        });
-
-        rows.sort((a, b) => {
-            if (publishedSort === 'title_asc') return String(a.title || '').localeCompare(String(b.title || ''));
-            if (publishedSort === 'title_desc') return String(b.title || '').localeCompare(String(a.title || ''));
-            if (publishedSort === 'published_oldest') return new Date(a.published_at || 0) - new Date(b.published_at || 0);
-            return new Date(b.published_at || 0) - new Date(a.published_at || 0);
-        });
-
-        return rows;
-    }, [publishedArticles, publishedSearch, publishedSort]);
-
     const pagedQueue = filteredQueue.slice(queuePage * queueRowsPerPage, queuePage * queueRowsPerPage + queueRowsPerPage);
-    const pagedPublished = filteredPublished.slice(
-        publishedPage * publishedRowsPerPage,
-        publishedPage * publishedRowsPerPage + publishedRowsPerPage,
-    );
 
     return (
-        <EditorLayout active="dashboard" availableRoles={availableRoles}>
-            <Head title="Editor Dashboard" />
+        <EditorLayout active="queue" availableRoles={availableRoles}>
+            <Head title="Editor Review Queue" />
 
             <Box sx={{ mb: 2 }}>
                 <Typography variant="h5" fontWeight={900} sx={{ color: colors.newsprint }}>
-                    Editorial Operations
+                    Review Queue
                 </Typography>
                 <Typography variant="body2" sx={{ color: colors.byline }}>
-                    Claim submitted entries, complete review actions, and control publication visibility.
+                    Claim submitted entries, complete review actions, and keep the queue moving.
                 </Typography>
             </Box>
 
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3,1fr)' }, gap: 1.5, mb: 2 }}>
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2,1fr)' }, gap: 1.5, mb: 2 }}>
                 {kpiCards.map((card) => (
                     <Card key={card.key} elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7) }}>
                         <CardContent sx={{ p: 2 }}>
@@ -177,7 +130,7 @@ export default function Dashboard({
                 ))}
             </Box>
 
-            <Card id="review-queue" elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7), mb: 2 }}>
+            <Card elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7), mb: 2 }}>
                 <CardContent>
                     <Stack
                         direction={{ xs: 'column', md: 'row' }}
@@ -187,7 +140,7 @@ export default function Dashboard({
                         mb={1.5}
                     >
                         <Typography variant="h6" fontWeight={800} sx={{ color: colors.newsprint }}>
-                            Review Queue
+                            Unclaimed Submissions
                         </Typography>
                         <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                             <TextField
@@ -251,9 +204,7 @@ export default function Dashboard({
                                         <Button
                                             size="small"
                                             variant="contained"
-                                            onClick={() =>
-                                                router.post(route('editor.articles.claim', article.id), {}, { preserveScroll: true })
-                                            }
+                                            onClick={() => router.post(route('editor.articles.claim', article.id), {}, { preserveScroll: true })}
                                             sx={{ bgcolor: colors.newsprint, '&:hover': { bgcolor: colors.accent } }}
                                         >
                                             Claim
@@ -279,12 +230,12 @@ export default function Dashboard({
                             setQueueRowsPerPage(Number(e.target.value));
                             setQueuePage(0);
                         }}
-                        rowsPerPageOptions={[5, 10]}
+                        rowsPerPageOptions={[10, 25, 50]}
                     />
                 </CardContent>
             </Card>
 
-            <Card elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7), mb: 2 }}>
+            <Card elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7) }}>
                 <CardContent>
                     <Typography variant="h6" fontWeight={800} sx={{ color: colors.newsprint, mb: 1.5 }}>
                         My Claimed Reviews
@@ -321,9 +272,7 @@ export default function Dashboard({
                                                 size="small"
                                                 variant="outlined"
                                                 color="warning"
-                                                onClick={() =>
-                                                    router.post(route('editor.articles.release', article.id), {}, { preserveScroll: true })
-                                                }
+                                                onClick={() => router.post(route('editor.articles.release', article.id), {}, { preserveScroll: true })}
                                             >
                                                 Release
                                             </Button>
@@ -338,128 +287,6 @@ export default function Dashboard({
                             )}
                         </TableBody>
                     </Table>
-                </CardContent>
-            </Card>
-
-            <Card id="published-articles" elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7) }}>
-                <CardContent>
-                    <Stack
-                        direction={{ xs: 'column', md: 'row' }}
-                        justifyContent="space-between"
-                        alignItems={{ xs: 'stretch', md: 'center' }}
-                        spacing={1}
-                        mb={1.5}
-                    >
-                        <Typography variant="h6" fontWeight={800} sx={{ color: colors.newsprint }}>
-                            Published Articles
-                        </Typography>
-                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                            <TextField
-                                size="small"
-                                label="Search title/author"
-                                value={publishedSearch}
-                                onChange={(e) => {
-                                    setPublishedSearch(e.target.value);
-                                    setPublishedPage(0);
-                                }}
-                            />
-                            <FormControl size="small" sx={{ minWidth: 160 }}>
-                                <InputLabel>Sort</InputLabel>
-                                <Select
-                                    value={publishedSort}
-                                    label="Sort"
-                                    onChange={(e) => {
-                                        setPublishedSort(e.target.value);
-                                        setPublishedPage(0);
-                                    }}
-                                >
-                                    <MenuItem value="published_newest">Published newest</MenuItem>
-                                    <MenuItem value="published_oldest">Published oldest</MenuItem>
-                                    <MenuItem value="title_asc">Title A-Z</MenuItem>
-                                    <MenuItem value="title_desc">Title Z-A</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Stack>
-                    </Stack>
-
-                    <Table size="small">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Article</TableCell>
-                                <TableCell>Visibility</TableCell>
-                                <TableCell>Published</TableCell>
-                                <TableCell align="right">Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {pagedPublished.map((article) => (
-                                <TableRow key={article.id} hover>
-                                    <TableCell>
-                                        <Typography variant="body2" fontWeight={700}>{article.title}</Typography>
-                                        <Typography variant="caption" sx={{ color: colors.byline }}>
-                                            {article.author?.name || 'Unknown'} | {article.comments_count || 0} comments
-                                        </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            size="small"
-                                            icon={<PublicRounded fontSize="small" />}
-                                            label={article.is_public ? 'Public' : 'Internal'}
-                                            color={article.is_public ? 'success' : 'default'}
-                                        />
-                                    </TableCell>
-                                    <TableCell>{formatDate(article.published_at)}</TableCell>
-                                    <TableCell align="right">
-                                        <Stack direction="row" spacing={0.75} justifyContent="flex-end">
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                startIcon={<VisibilityRounded fontSize="small" />}
-                                                onClick={() => router.visit(`/articles/${article.id}`)}
-                                            >
-                                                View
-                                            </Button>
-                                            {!article.is_public && (
-                                                <Button
-                                                    size="small"
-                                                    variant="contained"
-                                                    startIcon={<PublicRounded fontSize="small" />}
-                                                    onClick={() =>
-                                                        router.post(
-                                                            route('editor.articles.approvePublic', article.id),
-                                                            {},
-                                                            { preserveScroll: true },
-                                                        )
-                                                    }
-                                                    sx={{ bgcolor: colors.newsprint, '&:hover': { bgcolor: colors.accent } }}
-                                                >
-                                                    Approve Public
-                                                </Button>
-                                            )}
-                                        </Stack>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                            {pagedPublished.length === 0 && (
-                                <TableRow>
-                                    <TableCell colSpan={4}>No published articles found.</TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-
-                    <TablePagination
-                        component="div"
-                        count={filteredPublished.length}
-                        page={publishedPage}
-                        onPageChange={(_, newPage) => setPublishedPage(newPage)}
-                        rowsPerPage={publishedRowsPerPage}
-                        onRowsPerPageChange={(e) => {
-                            setPublishedRowsPerPage(Number(e.target.value));
-                            setPublishedPage(0);
-                        }}
-                        rowsPerPageOptions={[5, 10]}
-                    />
                 </CardContent>
             </Card>
         </EditorLayout>

@@ -10,6 +10,8 @@ Route::middleware(['auth', 'verified', 'role:editor'])
     ->as('editor.')
     ->group(function (): void {
         Route::get('/dashboard', [EditorDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/tracking', [EditorDashboardController::class, 'tracking'])->name('tracking.index');
+        Route::get('/published', [EditorDashboardController::class, 'published'])->name('published.index');
         Route::get('/articles/{article}/review', [EditorController::class, 'show'])->name('articles.show');
         Route::post('/articles/{article}/claim', [EditorController::class, 'claim'])->name('articles.claim');
         Route::post('/articles/{article}/release', [EditorController::class, 'release'])->name('articles.release');

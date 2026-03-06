@@ -75,6 +75,11 @@ class Article extends Model
         return $this->hasMany(Comment::class);
     }
 
+    public function editorialLogs(): HasMany
+    {
+        return $this->hasMany(EditorialActionLog::class);
+    }
+
     public function publicApprover(): BelongsTo
     {
         // Editor user that approved this article for public browsing.

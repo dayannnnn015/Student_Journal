@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\RoleSwitchController;
 use App\Http\Controllers\Shared\PublicArticleController;
 use App\Http\Controllers\ThemePreferenceController;
 use App\Models\Article;
@@ -52,6 +53,17 @@ Route::get('/articles/{article}', [PublicArticleController::class, 'show'])->nam
 // Redirect authenticated users to their role-specific dashboard.
 Route::get('/dashboard', function () {
     $user = request()->user();
+    $activeRole = request()->session()->get('active_role');
+
+    if ($activeRole && $user?->hasRole($activeRole)) {
+        return match ($activeRole) {
+            'admin' => redirect()->route('admin.dashboard'),
+            'writer' => redirect()->route('writer.dashboard'),
+            'editor' => redirect()->route('editor.dashboard'),
+            'student' => redirect()->route('student.dashboard'),
+            default => Inertia::render('Dashboard'),
+        };
+    }
 
     if ($user?->hasRole('admin')) {
         return redirect()->route('admin.dashboard');
@@ -74,11 +86,14 @@ Route::get('/dashboard', function () {
 
 // Register authenticated profile management routes.
 Route::middleware('auth')->group(function () {
+    Route::post('/switch-role', RoleSwitchController::class)->name('role.switch');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::patch('/preferences/theme', [ThemePreferenceController::class, 'update'])->name('preferences.theme.update');
-    Route::post('/articles/{article}/comments', [PublicArticleController::class, 'comment'])->name('public.articles.comment');
+    Route::post('/articles/{article}/comments', [PublicArticleController::class, 'comment'])
+        ->middleware('throttle:20,1')
+        ->name('public.articles.comment');
 });
 
 require __DIR__.'/auth.php';
@@ -87,8 +102,6 @@ require __DIR__.'/writer.php';
 require __DIR__.'/editor.php';
 require __DIR__.'/student.php';
 require __DIR__.'/admin.php';
-
-
 
 
 

@@ -38,6 +38,7 @@ class HandleInertiaRequests extends Middleware
                     ...$user->toArray(),
                     'roles' => $user->getRoleNames()->values(),
                 ] : null,
+                'active_role' => $request->session()->get('active_role'),
             ],
         ];
     }

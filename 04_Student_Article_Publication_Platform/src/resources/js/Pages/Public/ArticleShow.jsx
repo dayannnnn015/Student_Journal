@@ -1,6 +1,6 @@
 import AuthModal from '@/Components/AuthModal';
 import { getThemeColors, useThemeContext } from '@/Components/ThemeContext';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function ArticleShow({ article }) {
@@ -54,15 +54,29 @@ export default function ArticleShow({ article }) {
             });
     };
 
+    const goBack = () => {
+        if (typeof window !== 'undefined' && window.history.length > 1) {
+            window.history.back();
+            return;
+        }
+
+        router.visit(route('public.articles.index'));
+    };
+
     return (
         <>
             <Head title={article?.title ?? 'Article'} />
 
             <main className="min-h-screen" style={{ backgroundColor: colors.paper, color: colors.newsprint }}>
                 <div className="mx-auto max-w-4xl px-6 py-12">
-                    <Link href={route('public.articles.index')} className="font-mono text-xs underline" style={{ color: colors.byline }}>
-                        View All Articles
-                    </Link>
+                    <button
+                        type="button"
+                        onClick={goBack}
+                        className="px-4 py-2 border-2 font-mono text-xs tracking-wider"
+                        style={{ borderColor: colors.newsprint, color: colors.newsprint }}
+                    >
+                        BACK
+                    </button>
 
                     <article className="mt-6 rounded-xl border p-6" style={{ borderColor: colors.border, backgroundColor: colors.aged }}>
                         <p className="text-xs font-mono uppercase tracking-wider" style={{ color: colors.byline }}>

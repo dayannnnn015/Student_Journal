@@ -12,7 +12,7 @@ export default function ArticlesIndex({
     years = [],
     visibilityScope = 'public_only',
     backUrl = '/',
-    backLabel = 'BACK TO HOME',
+    backLabel = 'BACK',
 }) {
     const [showAuth, setShowAuth] = useState(false);
     const [authMode, setAuthMode] = useState('register');
@@ -115,6 +115,15 @@ export default function ArticlesIndex({
         });
     };
 
+    const goBack = () => {
+        if (typeof window !== 'undefined' && window.history.length > 1) {
+            window.history.back();
+            return;
+        }
+
+        router.visit(backUrl || '/');
+    };
+
     return (
         <>
             <Head title="Articles" />
@@ -181,9 +190,14 @@ export default function ArticlesIndex({
                                         : 'Browsing public articles. Sign in to access the full published archive.'}
                                 </p>
                             </div>
-                            <Link href={backUrl} className="px-4 py-2 border-2 font-mono text-xs tracking-wider" style={{ borderColor: colors.newsprint, color: colors.newsprint }}>
+                            <button
+                                type="button"
+                                onClick={goBack}
+                                className="px-4 py-2 border-2 font-mono text-xs tracking-wider"
+                                style={{ borderColor: colors.newsprint, color: colors.newsprint }}
+                            >
                                 {backLabel}
-                            </Link>
+                            </button>
                         </div>
                     </div>
 

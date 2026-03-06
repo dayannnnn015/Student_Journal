@@ -11,6 +11,15 @@ export default function AuthenticatedLayout({ header, children }) {
     const [showingNavigationDropdown, setShowingNavigationDropdown] =
         useState(false);
 
+    const goBack = () => {
+        if (typeof window !== 'undefined' && window.history.length > 1) {
+            window.history.back();
+            return;
+        }
+
+        window.location.href = route('dashboard');
+    };
+
     return (
         <div className="min-h-screen authenticated-theme" style={{ backgroundColor: colors.aged, color: colors.newsprint }}>
             <nav className="border-b" style={{ borderColor: colors.border, backgroundColor: colors.paper }}>
@@ -32,8 +41,9 @@ export default function AuthenticatedLayout({ header, children }) {
                         </div>
 
                         <div className="hidden sm:flex sm:items-center">
-                            <Link
-                                href={route('dashboard')}
+                            <button
+                                type="button"
+                                onClick={goBack}
                                 className="inline-flex items-center border px-3 py-1.5 text-sm font-semibold tracking-wide"
                                 style={{
                                     borderColor: colors.border,
@@ -41,8 +51,8 @@ export default function AuthenticatedLayout({ header, children }) {
                                     backgroundColor: colors.paper,
                                 }}
                             >
-                                Dashboard
-                            </Link>
+                                BACK
+                            </button>
                         </div>
 
                         <div className="-me-2 flex items-center sm:hidden">
@@ -96,9 +106,14 @@ export default function AuthenticatedLayout({ header, children }) {
                     }
                 >
                     <div className="space-y-1 pb-3 pt-2" style={{ borderColor: colors.border }}>
-                        <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
-                            Dashboard
-                        </ResponsiveNavLink>
+                        <button
+                            type="button"
+                            onClick={goBack}
+                            className="block w-full px-4 py-2 text-left text-sm font-medium transition"
+                            style={{ color: colors.newsprint, borderBottom: `1px solid ${colors.border}` }}
+                        >
+                            BACK
+                        </button>
                     </div>
 
                     <div className="border-t border-gray-200 pb-1 pt-4">

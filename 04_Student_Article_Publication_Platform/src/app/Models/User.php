@@ -103,6 +103,11 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Article::class, 'article_saves')->withTimestamps();
     }
+
+    public function writerApplications(): HasMany
+    {
+        return $this->hasMany(WriterApplication::class);
+    }
 }
 
 

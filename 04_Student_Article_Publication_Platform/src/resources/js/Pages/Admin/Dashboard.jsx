@@ -60,7 +60,7 @@ function pct(numerator, denominator) {
     return Math.round((numerator / denominator) * 100);
 }
 
-export default function Dashboard({ stats = {}, activity = [], recentUsers = [], recentArticles = [] }) {
+export default function Dashboard({ stats = {}, activity = [], recentUsers = [], recentArticles = [], editorialLogs = [] }) {
     const { theme: currentTheme } = useThemeContext();
     const colors = getThemeColors(currentTheme);
 
@@ -90,6 +90,10 @@ export default function Dashboard({ stats = {}, activity = [], recentUsers = [],
     const [articleStatusFilter, setArticleStatusFilter] = useState('all');
     const [articlePage, setArticlePage] = useState(0);
     const [articleRowsPerPage, setArticleRowsPerPage] = useState(5);
+    const [editorialSearch, setEditorialSearch] = useState('');
+    const [editorialActionFilter, setEditorialActionFilter] = useState('all');
+    const [editorialPage, setEditorialPage] = useState(0);
+    const [editorialRowsPerPage, setEditorialRowsPerPage] = useState(10);
 
     const totalUsers = number(stats.totalUsers);
     const activeUsers = number(stats.activeUsers);
@@ -231,8 +235,38 @@ export default function Dashboard({ stats = {}, activity = [], recentUsers = [],
         return rows;
     }, [recentArticles, articleSearch, articleStatusFilter]);
 
+    const filteredEditorialLogs = useMemo(() => {
+        const keyword = editorialSearch.trim().toLowerCase();
+        const rows = editorialLogs.filter((log) => {
+            const title = String(log.article_title || '').toLowerCase();
+            const actor = String(log.actor?.name || '').toLowerCase();
+            const action = String(log.action || '').toLowerCase();
+            const note = String(log.note || '').toLowerCase();
+            const matchesKeyword =
+                !keyword ||
+                title.includes(keyword) ||
+                actor.includes(keyword) ||
+                action.includes(keyword) ||
+                note.includes(keyword);
+            const matchesAction = editorialActionFilter === 'all' || log.action === editorialActionFilter;
+            return matchesKeyword && matchesAction;
+        });
+
+        rows.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+        return rows;
+    }, [editorialLogs, editorialSearch, editorialActionFilter]);
+
     const pagedUsers = filteredUsers.slice(userPage * userRowsPerPage, userPage * userRowsPerPage + userRowsPerPage);
     const pagedArticles = filteredArticles.slice(articlePage * articleRowsPerPage, articlePage * articleRowsPerPage + articleRowsPerPage);
+    const pagedEditorialLogs = filteredEditorialLogs.slice(
+        editorialPage * editorialRowsPerPage,
+        editorialPage * editorialRowsPerPage + editorialRowsPerPage,
+    );
+
+    const editorialActionOptions = useMemo(
+        () => ['all', ...new Set(editorialLogs.map((log) => log.action).filter(Boolean))],
+        [editorialLogs],
+    );
 
     const setUserStatus = (user, nextStatus) => {
         router.patch(
@@ -503,6 +537,115 @@ export default function Dashboard({ stats = {}, activity = [], recentUsers = [],
                             </CardContent>
                         </Card>
                     </Box>
+
+                    <Card elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7), mt: 1.5 }}>
+                        <CardContent>
+                            <Stack
+                                direction={{ xs: 'column', md: 'row' }}
+                                justifyContent="space-between"
+                                alignItems={{ xs: 'stretch', md: 'center' }}
+                                spacing={1}
+                                mb={1.5}
+                            >
+                                <Typography variant="h6" fontWeight={800} sx={{ color: colors.newsprint }}>
+                                    Editorial Audit Trail
+                                </Typography>
+                                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                                    <TextField
+                                        size="small"
+                                        label="Search article/editor/action"
+                                        value={editorialSearch}
+                                        onChange={(e) => {
+                                            setEditorialSearch(e.target.value);
+                                            setEditorialPage(0);
+                                        }}
+                                    />
+                                    <FormControl size="small" sx={{ minWidth: 180 }}>
+                                        <InputLabel>Action</InputLabel>
+                                        <Select
+                                            value={editorialActionFilter}
+                                            label="Action"
+                                            onChange={(e) => {
+                                                setEditorialActionFilter(e.target.value);
+                                                setEditorialPage(0);
+                                            }}
+                                        >
+                                            {editorialActionOptions.map((action) => (
+                                                <MenuItem key={action} value={action}>
+                                                    {action === 'all' ? 'All actions' : action}
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                </Stack>
+                            </Stack>
+
+                            <Table size="small">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>When</TableCell>
+                                        <TableCell>Article</TableCell>
+                                        <TableCell>Actor</TableCell>
+                                        <TableCell>Action</TableCell>
+                                        <TableCell>Status Transition</TableCell>
+                                        <TableCell>Note</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {pagedEditorialLogs.map((log) => (
+                                        <TableRow key={log.id} hover>
+                                            <TableCell>{formatDate(log.created_at)}</TableCell>
+                                            <TableCell>
+                                                <Typography variant="body2" fontWeight={700}>
+                                                    {log.article_title || `Article #${log.article_id}`}
+                                                </Typography>
+                                                <Typography variant="caption" sx={{ color: colors.byline }}>
+                                                    ID: {log.article_id}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography variant="body2">{log.actor?.name || 'Unknown'}</Typography>
+                                                <Typography variant="caption" sx={{ color: colors.byline }}>
+                                                    {log.acting_role || '-'}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Chip size="small" label={log.action || '-'} />
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography variant="body2">
+                                                    {(log.previous_status || 'none')} {'>'} {(log.new_status || 'none')}
+                                                </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography variant="caption" sx={{ color: colors.byline }}>
+                                                    {log.note || '-'}
+                                                </Typography>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                    {pagedEditorialLogs.length === 0 && (
+                                        <TableRow>
+                                            <TableCell colSpan={6}>No editorial actions found.</TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+
+                            <TablePagination
+                                component="div"
+                                count={filteredEditorialLogs.length}
+                                page={editorialPage}
+                                onPageChange={(_, newPage) => setEditorialPage(newPage)}
+                                rowsPerPage={editorialRowsPerPage}
+                                onRowsPerPageChange={(e) => {
+                                    setEditorialRowsPerPage(Number(e.target.value));
+                                    setEditorialPage(0);
+                                }}
+                                rowsPerPageOptions={[10, 25, 50]}
+                            />
+                        </CardContent>
+                    </Card>
                 </Container>
             </Box>
         </MuiThemeProvider>

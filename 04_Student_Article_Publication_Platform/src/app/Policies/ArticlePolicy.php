@@ -16,12 +16,13 @@ class ArticlePolicy
     /** Determine whether the user can view the article for editing. */
     public function view(User $user, Article $article): bool
     {
-        if ($user->hasRole('writer')) {
-            return $article->user_id === $user->id;
-        }
-
+        // Editor access must take precedence for dual-role users (editor+writer).
         if ($user->hasRole('editor')) {
             return true;
+        }
+
+        if ($user->hasRole('writer')) {
+            return $article->user_id === $user->id;
         }
 
         // Students can view/record views only for published articles.

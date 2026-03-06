@@ -1,10 +1,14 @@
 import { Link, usePage } from '@inertiajs/react';
 import { getThemeColors, useThemeContext } from '@/Components/ThemeContext';
+import RoleFooter from '@/Components/RoleFooter';
 
 export default function WriterLayout({ children }) {
     const { theme } = useThemeContext();
     const colors = getThemeColors(theme);
-    const user = usePage().props?.auth?.user;
+    const auth = usePage().props?.auth || {};
+    const user = auth?.user;
+    const userRoles = Array.isArray(user?.roles) ? user.roles : [];
+    const canSwitchToEditor = userRoles.includes('editor');
     const initial = user?.name ? user.name.charAt(0).toUpperCase() : 'W';
 
     return (
@@ -38,6 +42,19 @@ export default function WriterLayout({ children }) {
                             Profile
                         </Link>
 
+                        {canSwitchToEditor && (
+                            <Link
+                                href={route('role.switch')}
+                                method="post"
+                                data={{ role: 'editor' }}
+                                as="button"
+                                className="rounded border px-3 py-1.5 text-sm font-medium transition"
+                                style={{ borderColor: colors.border, color: colors.newsprint, backgroundColor: colors.paper }}
+                            >
+                                Switch: Editor
+                            </Link>
+                        )}
+
                         <Link
                             href={route('logout')}
                             method="post"
@@ -54,6 +71,8 @@ export default function WriterLayout({ children }) {
             <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
                 {children}
             </div>
+
+            <RoleFooter role="writer" />
 
             <style>{`
                 .writer-theme .bg-white { background-color: ${colors.paper} !important; }
