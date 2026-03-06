@@ -1,12 +1,11 @@
 import { Link, useForm } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { getThemeColors, useThemeContext } from '@/Components/ThemeContext';
+import { useTheme } from '@/Contexts/ThemeContext';
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
     const [mode, setMode] = useState(initialMode);
-    const { theme } = useThemeContext();
-    const colors = getThemeColors(theme);
+    const { colors } = useTheme();
 
     useEffect(() => {
         if (isOpen) {
@@ -30,16 +29,20 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
     const handleLogin = (e) => {
         e.preventDefault();
         loginForm.post(route('login'), {
-            onSuccess: () => onClose(),
-            onFinish: () => loginForm.reset('password'),
+            onSuccess: () => {
+                onClose();
+                loginForm.reset();
+            },
         });
     };
 
     const handleRegister = (e) => {
         e.preventDefault();
         registerForm.post(route('register'), {
-            onSuccess: () => onClose(),
-            onFinish: () => registerForm.reset('password', 'password_confirmation'),
+            onSuccess: () => {
+                onClose();
+                registerForm.reset();
+            },
         });
     };
 
@@ -54,14 +57,14 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     onClick={onClose}
-                    className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-                    aria-label="Close authentication modal"
+                    className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                    aria-label="Close"
                 />
 
                 <motion.div
-                    initial={{ opacity: 0, y: 16, scale: 0.98 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 16, scale: 0.98 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
                     className="relative w-full max-w-md rounded-xl border shadow-2xl"
                     style={{
@@ -73,9 +76,9 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                     <button
                         type="button"
                         onClick={onClose}
-                        className="absolute right-3 top-2 text-2xl leading-none"
+                        className="absolute right-3 top-2 text-xl leading-none"
                         style={{ color: colors.byline }}
-                        aria-label="Close"
+                        aria-label="Close modal"
                     >
                         x
                     </button>

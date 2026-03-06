@@ -423,3 +423,12 @@ export function useTheme() {
     }
     return context;
 }
+
+// Utility to get theme colors by theme name and dark mode
+export function getThemeColors(themeName, isDarkMode = false) {
+    const theme = themeDefinitions[themeName] || themeDefinitions.classic;
+    return theme[isDarkMode ? 'dark' : 'light'];
+}
+
+// Alias for compatibility
+export const useThemeContext = useTheme;
