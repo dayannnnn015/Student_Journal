@@ -39,7 +39,7 @@ export default function StudentLayout({ children }) {
                 {children}
             </main>
 
-            <ThemePicker position="bottom-right" />
+            <ThemePicker position="floating-bottom-right" />
         </div>
     );
 }
