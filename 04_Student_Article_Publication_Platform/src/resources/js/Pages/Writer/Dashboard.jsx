@@ -35,6 +35,7 @@ export default function Dashboard({
             }
         }
 
+        // Poll for near-real-time updates.
         const id = setInterval(refresh, 5_000);
         refresh();
 
@@ -86,6 +87,10 @@ export default function Dashboard({
                                                 {d.category?.name ? (
                                                     <>
                                                         Category: {d.category.name} —{' '}
+                                                {' â€” '}
+                                                {d.category?.name ? (
+                                                    <>
+                                                        Category: {d.category.name} â€”{' '}
                                                     </>
                                                 ) : null}
                                                 Due: {d.due_at ? new Date(d.due_at).toLocaleString() : 'N/A'}
@@ -126,6 +131,7 @@ export default function Dashboard({
                                         <li key={n.id} className="leading-6">
                                             {n.data?.message ?? n.type}
                                             {n.data?.title ? ' — ' + n.data.title : ''}
+                                            {n.data?.title ? ' â€” ' + n.data.title : ''}
                                             {n.created_at ? ' (' + new Date(n.created_at).toLocaleString() + ')' : ''}
                                         </li>
                                     ))}
@@ -145,6 +151,7 @@ export default function Dashboard({
                                         <li key={a.id} className="leading-6">
                                             {a.title}
                                             {a.author?.name ? ' — ' + a.author.name : ''}
+                                            {a.author?.name ? ' â€” ' + a.author.name : ''}
                                         </li>
                                     ))}
                                 </ul>

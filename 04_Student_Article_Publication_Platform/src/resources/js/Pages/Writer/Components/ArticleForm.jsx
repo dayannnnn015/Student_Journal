@@ -3,7 +3,6 @@ import { router } from '@inertiajs/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import JoditEditor from '@/Components/JoditEditor';
 
-
 function htmlToText(html) {
     if (!html) return '';
     try {
@@ -737,5 +736,6 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
         </div>
     );
 }
+
 
 
