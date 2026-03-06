@@ -1,7 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState } from 'react';
-import { useThemeContext, NEWSPAPER_THEMES, getThemeColors } from '@/Components/ThemeContext';
+import { useTheme } from '@/Contexts/ThemeContext';
 import AuthModal from '@/Components/AuthModal';
 
 export default function ArticlesIndex({ articles = [], auth = {} }) {
@@ -11,14 +11,28 @@ export default function ArticlesIndex({ articles = [], auth = {} }) {
     const [commentDrafts, setCommentDrafts] = useState({});
     const [showRegisterPrompt, setShowRegisterPrompt] = useState({});
     const [commentErrors, setCommentErrors] = useState({});
+
     const commentForm = useForm({
         body: '',
         parent_id: null,
     });
 
-    const { theme: currentTheme, setTheme: setCurrentTheme } = useThemeContext();
-    const themes = NEWSPAPER_THEMES;
-    const colors = getThemeColors(currentTheme);
+    const {
+        theme: currentTheme,
+        setTheme: setCurrentTheme,
+        colors: themeColors,
+        availableThemes: themes,
+    } = useTheme();
+
+    const colors = {
+        newsprint: themeColors.text,
+        paper: themeColors.background,
+        aged: themeColors.surface,
+        ink: themeColors.text,
+        accent: themeColors.accent,
+        byline: themeColors.textSecondary,
+        border: themeColors.border,
+    };
 
     const handleCommentInput = (articleId, value) => {
         setCommentDrafts((prev) => ({ ...prev, [articleId]: value }));
@@ -87,7 +101,7 @@ export default function ArticlesIndex({ articles = [], auth = {} }) {
                         >
                             <div className="font-serif text-sm font-bold mb-2" style={{ color: colors.newsprint }}>Newspaper Themes</div>
                             <div className="space-y-1">
-                                {Object.entries(themes).map(([key, theme]) => (
+                                {Object.entries(themes).map(([key, themeMeta]) => (
                                     <button
                                         key={key}
                                         type="button"
@@ -101,8 +115,8 @@ export default function ArticlesIndex({ articles = [], auth = {} }) {
                                             color: colors.newsprint,
                                         }}
                                     >
-                                        <span>{theme.icon}</span>
-                                        <span className="font-serif text-sm">{theme.name}</span>
+                                        <span>{themeMeta.icon}</span>
+                                        <span className="font-serif text-sm">{themeMeta.name}</span>
                                         {currentTheme === key && <span className="ml-auto">OK</span>}
                                     </button>
                                 ))}
