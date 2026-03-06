@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
-import { useThemeContext } from '@/Components/ThemeContext';
+import { useTheme } from '@/Contexts/ThemeContext';
 import AuthModal from '@/Components/AuthModal';
 import { Avatar, TextField, Button } from '@mui/material';
 
@@ -25,7 +25,7 @@ export default function ArticlesIndex({ articles = [], auth = {} }) {
     };
 
     // Minimal color palette for consistency
-    const { theme: currentTheme } = useThemeContext();
+    const { theme: currentTheme } = useTheme();
     const themes = {
         classic: {
             newsprint: '#1a1a1a', paper: '#f8f8f8', accent: '#4a4a4a', byline: '#666666', border: '#d4d4d4',
