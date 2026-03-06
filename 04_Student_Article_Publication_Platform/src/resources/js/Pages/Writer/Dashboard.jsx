@@ -1,4 +1,4 @@
-import WriterLayout from "../Shared/Layouts/WriterLayout";
+import WriterLayout from '@/Layouts/WriterLayout';
 import { Link } from '@inertiajs/react';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -83,6 +83,10 @@ export default function Dashboard({
                                         <li key={d.id} className="leading-6">
                                             <span className="font-semibold">{d.title}</span>
                                             <span>
+                                                {' — '}
+                                                {d.category?.name ? (
+                                                    <>
+                                                        Category: {d.category.name} —{' '}
                                                 {' â€” '}
                                                 {d.category?.name ? (
                                                     <>
@@ -126,6 +130,7 @@ export default function Dashboard({
                                     {notifications.map((n) => (
                                         <li key={n.id} className="leading-6">
                                             {n.data?.message ?? n.type}
+                                            {n.data?.title ? ' — ' + n.data.title : ''}
                                             {n.data?.title ? ' â€” ' + n.data.title : ''}
                                             {n.created_at ? ' (' + new Date(n.created_at).toLocaleString() + ')' : ''}
                                         </li>
@@ -145,6 +150,7 @@ export default function Dashboard({
                                     {relatedArticles.map((a) => (
                                         <li key={a.id} className="leading-6">
                                             {a.title}
+                                            {a.author?.name ? ' — ' + a.author.name : ''}
                                             {a.author?.name ? ' â€” ' + a.author.name : ''}
                                         </li>
                                     ))}

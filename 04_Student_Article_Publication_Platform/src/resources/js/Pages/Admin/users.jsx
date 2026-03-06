@@ -14,8 +14,9 @@ import {
     DialogContent,
     DialogTitle,
     FormControl,
-    IconButton,
+    InputAdornment,
     InputLabel,
+    LinearProgress,
     MenuItem,
     Select,
     Stack,
@@ -23,13 +24,26 @@ import {
     TableBody,
     TableCell,
     TableHead,
+    TablePagination,
     TableRow,
     TextField,
+    Tooltip,
     Typography,
-    createTheme
+    createTheme,
 } from '@mui/material';
 import { ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
-import { AddRounded, DeleteRounded, EditRounded } from '@mui/icons-material';
+import {
+    AddRounded,
+    DeleteRounded,
+    EditRounded,
+    GroupsRounded,
+    PendingRounded,
+    SchoolRounded,
+    SearchRounded,
+    TuneRounded,
+    VerifiedRounded,
+    WarningAmberRounded,
+} from '@mui/icons-material';
 import { getThemeColors, useThemeContext } from '@/Components/ThemeContext';
 import AdminTopBar from './Components/AdminTopBar';
 
@@ -58,6 +72,10 @@ function normalizeForm(form, isEdit = false) {
     };
 }
 
+function hasRole(user, role) {
+    return Array.isArray(user.roles) && user.roles.includes(role);
+}
+
 export default function Users({ users = [], roles = [] }) {
     const { theme: currentTheme } = useThemeContext();
     const colors = getThemeColors(currentTheme);
@@ -82,6 +100,9 @@ export default function Users({ users = [], roles = [] }) {
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [roleFilter, setRoleFilter] = useState('all');
+    const [sortBy, setSortBy] = useState('newest');
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const [createOpen, setCreateOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
@@ -94,10 +115,28 @@ export default function Users({ users = [], roles = [] }) {
     const [createErrors, setCreateErrors] = useState({});
     const [editErrors, setEditErrors] = useState({});
 
+    const summary = useMemo(() => {
+        const total = users.length;
+        const active = users.filter((u) => u.account_status === 'active').length;
+        const pending = users.filter((u) => u.account_status === 'pending').length;
+        const suspended = users.filter((u) => u.account_status === 'suspended').length;
+        const students = users.filter((u) => hasRole(u, 'student')).length;
+        const verifiedRate = total ? Math.round((active / total) * 100) : 0;
+
+        return {
+            total,
+            active,
+            pending,
+            suspended,
+            students,
+            verifiedRate,
+        };
+    }, [users]);
+
     const filteredUsers = useMemo(() => {
         const keyword = search.trim().toLowerCase();
 
-        return users.filter((user) => {
+        const base = users.filter((user) => {
             const name = String(user.name || '').toLowerCase();
             const email = String(user.email || '').toLowerCase();
             const userRoles = Array.isArray(user.roles) ? user.roles : [];
@@ -108,7 +147,24 @@ export default function Users({ users = [], roles = [] }) {
 
             return matchesKeyword && matchesStatus && matchesRole;
         });
-    }, [users, search, statusFilter, roleFilter]);
+
+        base.sort((a, b) => {
+            if (sortBy === 'name-asc') return String(a.name || '').localeCompare(String(b.name || ''));
+            if (sortBy === 'name-desc') return String(b.name || '').localeCompare(String(a.name || ''));
+
+            const aDate = a.created_at ? new Date(a.created_at).getTime() : 0;
+            const bDate = b.created_at ? new Date(b.created_at).getTime() : 0;
+            if (sortBy === 'oldest') return aDate - bDate;
+            return bDate - aDate;
+        });
+
+        return base;
+    }, [users, search, statusFilter, roleFilter, sortBy]);
+
+    const pagedUsers = useMemo(() => {
+        const start = page * rowsPerPage;
+        return filteredUsers.slice(start, start + rowsPerPage);
+    }, [filteredUsers, page, rowsPerPage]);
 
     const resetCreate = () => {
         setCreateForm(normalizeForm({ account_status: 'active' }));
@@ -175,6 +231,57 @@ export default function Users({ users = [], roles = [] }) {
         );
     };
 
+    const metricCards = [
+        {
+            key: 'total',
+            label: 'Total Accounts',
+            value: summary.total,
+            note: `${summary.active} active accounts`,
+            icon: <GroupsRounded fontSize="small" />,
+            tone: colors.newsprint,
+            progress: 100,
+        },
+        {
+            key: 'students',
+            label: 'Students',
+            value: summary.students,
+            note: 'Eligible for writer/editor applications',
+            icon: <SchoolRounded fontSize="small" />,
+            tone: colors.accent,
+            progress: summary.total ? Math.round((summary.students / summary.total) * 100) : 0,
+        },
+        {
+            key: 'health',
+            label: 'Account Health',
+            value: `${summary.verifiedRate}%`,
+            note: `${summary.suspended} suspended`,
+            icon: <VerifiedRounded fontSize="small" />,
+            tone: '#2e7d32',
+            progress: summary.verifiedRate,
+        },
+    ];
+
+    const queueItems = [
+        {
+            key: 'pending',
+            label: 'Pending approvals',
+            count: summary.pending,
+            action: () => {
+                setStatusFilter('pending');
+                setPage(0);
+            },
+        },
+        {
+            key: 'suspended',
+            label: 'Suspended accounts',
+            count: summary.suspended,
+            action: () => {
+                setStatusFilter('suspended');
+                setPage(0);
+            },
+        },
+    ];
+
     return (
         <MuiThemeProvider theme={muiTheme}>
             <CssBaseline />
@@ -191,26 +298,86 @@ export default function Users({ users = [], roles = [] }) {
                 <Container maxWidth="xl" sx={{ py: 2 }}>
                     <AdminTopBar active="users" />
 
+                    <Box sx={{ mb: 2 }}>
+                        <Typography variant="h5" fontWeight={900} sx={{ color: colors.newsprint }}>User Administration</Typography>
+                        <Typography variant="body2" sx={{ color: colors.byline }}>
+                            Prioritize approvals and account issues, then manage role and status lifecycle.
+                        </Typography>
+                    </Box>
+
                     <Card elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7), mb: 2 }}>
                         <CardContent>
-                            <Stack
-                                direction={{ xs: 'column', md: 'row' }}
-                                spacing={1.25}
-                                alignItems={{ xs: 'stretch', md: 'center' }}
-                                justifyContent="space-between"
-                            >
+                            <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'stretch', md: 'center' }} spacing={1.25}>
+                                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                                    {queueItems.map((item) => (
+                                        <Chip
+                                            key={item.key}
+                                            icon={<WarningAmberRounded />}
+                                            label={`${item.label}: ${item.count}`}
+                                            color={item.count > 0 ? 'warning' : 'default'}
+                                            onClick={item.action}
+                                            variant="outlined"
+                                        />
+                                    ))}
+                                </Stack>
+                                <Stack direction="row" spacing={1}>
+                                    <Button variant="outlined" startIcon={<TuneRounded />} onClick={() => { setSearch(''); setStatusFilter('all'); setRoleFilter('all'); setSortBy('newest'); setPage(0); }}>
+                                        Reset Filters
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        startIcon={<AddRounded />}
+                                        onClick={() => {
+                                            resetCreate();
+                                            setCreateOpen(true);
+                                        }}
+                                        sx={{
+                                            bgcolor: colors.newsprint,
+                                            '&:hover': { bgcolor: colors.accent },
+                                        }}
+                                    >
+                                        Add User
+                                    </Button>
+                                </Stack>
+                            </Stack>
+                        </CardContent>
+                    </Card>
+
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 1.25, mb: 2 }}>
+                        {metricCards.map((card) => (
+                            <Card key={card.key} elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7) }}>
+                                <CardContent>
+                                    <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.75}>
+                                        <Typography variant="caption" sx={{ color: colors.byline, textTransform: 'uppercase', letterSpacing: 0.6 }}>{card.label}</Typography>
+                                        <Box sx={{ display: 'inline-flex', p: 0.75, borderRadius: 2, bgcolor: alpha(card.tone, 0.12), color: card.tone }}>{card.icon}</Box>
+                                    </Stack>
+                                    <Typography variant="h4" fontWeight={900} sx={{ color: colors.newsprint }}>{card.value}</Typography>
+                                    <Typography variant="caption" sx={{ color: colors.byline, display: 'block', mb: 1 }}>{card.note}</Typography>
+                                    <LinearProgress variant="determinate" value={card.progress} sx={{ height: 6, borderRadius: 10, bgcolor: alpha(colors.border, 0.4), '& .MuiLinearProgress-bar': { bgcolor: card.tone } }} />
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </Box>
+
+                    <Card elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7), mb: 2 }}>
+                        <CardContent>
+                            <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.25} alignItems={{ xs: 'stretch', md: 'center' }} justifyContent="space-between">
                                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.25} sx={{ flex: 1 }}>
                                     <TextField
                                         size="small"
                                         label="Search name/email"
                                         value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
+                                        onChange={(e) => {
+                                            setSearch(e.target.value);
+                                            setPage(0);
+                                        }}
                                         fullWidth
+                                        InputProps={{ startAdornment: (<InputAdornment position="start"><SearchRounded fontSize="small" /></InputAdornment>) }}
                                     />
 
-                                    <FormControl size="small" sx={{ minWidth: 160 }}>
+                                    <FormControl size="small" sx={{ minWidth: 150 }}>
                                         <InputLabel>Status</InputLabel>
-                                        <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value)}>
+                                        <Select value={statusFilter} label="Status" onChange={(e) => { setStatusFilter(e.target.value); setPage(0); }}>
                                             <MenuItem value="all">All</MenuItem>
                                             {ACCOUNT_STATUSES.map((status) => (
                                                 <MenuItem key={status} value={status}>{status}</MenuItem>
@@ -218,31 +385,28 @@ export default function Users({ users = [], roles = [] }) {
                                         </Select>
                                     </FormControl>
 
-                                    <FormControl size="small" sx={{ minWidth: 160 }}>
+                                    <FormControl size="small" sx={{ minWidth: 150 }}>
                                         <InputLabel>Role</InputLabel>
-                                        <Select value={roleFilter} label="Role" onChange={(e) => setRoleFilter(e.target.value)}>
+                                        <Select value={roleFilter} label="Role" onChange={(e) => { setRoleFilter(e.target.value); setPage(0); }}>
                                             <MenuItem value="all">All</MenuItem>
                                             {roles.map((role) => (
                                                 <MenuItem key={role} value={role}>{role}</MenuItem>
                                             ))}
                                         </Select>
                                     </FormControl>
+
+                                    <FormControl size="small" sx={{ minWidth: 150 }}>
+                                        <InputLabel>Sort</InputLabel>
+                                        <Select value={sortBy} label="Sort" onChange={(e) => setSortBy(e.target.value)}>
+                                            <MenuItem value="newest">Newest</MenuItem>
+                                            <MenuItem value="oldest">Oldest</MenuItem>
+                                            <MenuItem value="name-asc">Name A-Z</MenuItem>
+                                            <MenuItem value="name-desc">Name Z-A</MenuItem>
+                                        </Select>
+                                    </FormControl>
                                 </Stack>
 
-                                <Button
-                                    variant="contained"
-                                    startIcon={<AddRounded />}
-                                    onClick={() => {
-                                        resetCreate();
-                                        setCreateOpen(true);
-                                    }}
-                                    sx={{
-                                        bgcolor: colors.newsprint,
-                                        '&:hover': { bgcolor: colors.accent },
-                                    }}
-                                >
-                                    Add User
-                                </Button>
+                                <Chip label={`${filteredUsers.length} matches`} color="info" variant="outlined" />
                             </Stack>
                         </CardContent>
                     </Card>
@@ -250,14 +414,13 @@ export default function Users({ users = [], roles = [] }) {
                     <Card elevation={0} sx={{ border: '1px solid', borderColor: alpha(colors.border, 0.7) }}>
                         <CardContent>
                             <Typography variant="h6" fontWeight={800} sx={{ color: colors.newsprint, mb: 1.5 }}>
-                                Managed Accounts ({filteredUsers.length})
+                                Managed Accounts
                             </Typography>
 
                             <Table size="small">
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell>Name</TableCell>
-                                        <TableCell>Email</TableCell>
+                                        <TableCell>User</TableCell>
                                         <TableCell>Roles</TableCell>
                                         <TableCell>Status</TableCell>
                                         <TableCell>Created</TableCell>
@@ -265,61 +428,80 @@ export default function Users({ users = [], roles = [] }) {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {filteredUsers.map((user) => (
-                                        <TableRow key={user.id} hover>
-                                            <TableCell>
-                                                <Typography fontWeight={700}>{user.name}</Typography>
-                                            </TableCell>
-                                            <TableCell>{user.email}</TableCell>
-                                            <TableCell>
-                                                <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
-                                                    {(user.roles || []).map((role) => (
-                                                        <Chip key={role} label={role} size="small" />
-                                                    ))}
-                                                </Stack>
-                                            </TableCell>
-                                            <TableCell>
-                                                <FormControl size="small" sx={{ minWidth: 130 }}>
-                                                    <Select
-                                                        value={user.account_status}
-                                                        onChange={(e) => updateStatus(user, e.target.value)}
-                                                    >
-                                                        {ACCOUNT_STATUSES.map((status) => (
-                                                            <MenuItem key={status} value={status}>{status}</MenuItem>
+                                    {pagedUsers.map((user) => {
+                                        const nextStatus = user.account_status === 'suspended' ? 'active' : 'suspended';
+                                        const quickActionLabel = nextStatus === 'suspended' ? 'Disable' : 'Activate';
+
+                                        return (
+                                            <TableRow key={user.id} hover>
+                                                <TableCell>
+                                                    <Typography fontWeight={700}>{user.name}</Typography>
+                                                    <Typography variant="caption" sx={{ color: colors.byline }}>{user.email}</Typography>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
+                                                        {(user.roles || []).map((role) => (
+                                                            <Chip key={role} label={role} size="small" />
                                                         ))}
-                                                    </Select>
-                                                </FormControl>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Typography variant="body2">{formatDate(user.created_at)}</Typography>
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                                                    </Stack>
+                                                </TableCell>
+                                                <TableCell>
                                                     <Chip size="small" label={user.account_status} color={statusColor(user.account_status)} />
-                                                    <IconButton size="small" onClick={() => openEdit(user)}>
-                                                        <EditRounded fontSize="small" />
-                                                    </IconButton>
-                                                    <IconButton
-                                                        size="small"
-                                                        color="error"
-                                                        onClick={() => {
-                                                            setTargetUser(user);
-                                                            setDeleteOpen(true);
-                                                        }}
-                                                    >
-                                                        <DeleteRounded fontSize="small" />
-                                                    </IconButton>
-                                                </Stack>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                    {filteredUsers.length === 0 && (
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Typography variant="body2">{formatDate(user.created_at)}</Typography>
+                                                </TableCell>
+                                                <TableCell align="right">
+                                                    <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+                                                        <Tooltip title="Edit user">
+                                                            <Button size="small" variant="outlined" startIcon={<EditRounded />} onClick={() => openEdit(user)}>
+                                                                Edit
+                                                            </Button>
+                                                        </Tooltip>
+                                                        <Tooltip title={`${quickActionLabel} account`}>
+                                                            <Button size="small" variant="contained" color={nextStatus === 'suspended' ? 'warning' : 'success'} startIcon={nextStatus === 'suspended' ? <PendingRounded fontSize="small" /> : <VerifiedRounded fontSize="small" />} onClick={() => updateStatus(user, nextStatus)}>
+                                                                {quickActionLabel}
+                                                            </Button>
+                                                        </Tooltip>
+                                                        <Tooltip title="Delete user">
+                                                            <Button
+                                                                size="small"
+                                                                color="error"
+                                                                variant="outlined"
+                                                                startIcon={<DeleteRounded />}
+                                                                onClick={() => {
+                                                                    setTargetUser(user);
+                                                                    setDeleteOpen(true);
+                                                                }}
+                                                            >
+                                                                Delete
+                                                            </Button>
+                                                        </Tooltip>
+                                                    </Stack>
+                                                </TableCell>
+                                            </TableRow>
+                                        );
+                                    })}
+                                    {pagedUsers.length === 0 && (
                                         <TableRow>
-                                            <TableCell colSpan={6}>No users found for the current filters.</TableCell>
+                                            <TableCell colSpan={5}>No users found for the current filters.</TableCell>
                                         </TableRow>
                                     )}
                                 </TableBody>
                             </Table>
+
+                            <TablePagination
+                                component="div"
+                                count={filteredUsers.length}
+                                page={page}
+                                onPageChange={(_, newPage) => setPage(newPage)}
+                                rowsPerPage={rowsPerPage}
+                                onRowsPerPageChange={(e) => {
+                                    setRowsPerPage(Number(e.target.value));
+                                    setPage(0);
+                                }}
+                                rowsPerPageOptions={[5, 10, 25]}
+                            />
                         </CardContent>
                     </Card>
                 </Container>
@@ -460,4 +642,3 @@ export default function Users({ users = [], roles = [] }) {
         </MuiThemeProvider>
     );
 }
-

@@ -30,7 +30,7 @@ import {
     ArrowForward,
     PhotoCamera,
 } from '@mui/icons-material';
-import StudentLayout from '../Shared/Layouts/StudentLayout';
+import StudentLayout from '@/Layouts/StudentLayout';
 import { createDashboardTheme, COLORS, DARK_COLORS } from './DashboardSections/dashboardTheme';
 
 const InfoRow = ({ label, value, icon }) => {

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { router } from '@inertiajs/react';
 import {
     Box,
     Typography,
@@ -13,7 +12,6 @@ import {
     Modal,
     Fade,
     Backdrop,
-    Grid,
 } from '@mui/material';
 import {
     Close,
@@ -21,11 +19,9 @@ import {
     Star,
     Schedule,
     Visibility,
-    Comment,
     ArrowBack,
     ArrowForward,
 } from '@mui/icons-material';
-import StudentLayout from '../../Shared/Layouts/StudentLayout';
 import CommentSection from './CommentSection';
 import RecommendedList from './RecommendedList';
 import { COLORS, DARK_COLORS, estimateReadingTime } from '../DashboardSections/dashboardTheme';
@@ -46,41 +42,27 @@ export default function ArticleView({
     isSubmittingComment = false,
     commentError = '',
     currentUserName = 'You',
-    standalone = false,
 }) {
     const [readingProgress, setReadingProgress] = useState(0);
     const [articleScrollRef, setArticleScrollRef] = useState(null);
     const [commentScrollRef, setCommentScrollRef] = useState(null);
 
     useEffect(() => {
-        if (!open && !standalone) return;
+        if (!open) return;
 
-        const element = standalone ? window : articleScrollRef;
+        const element = articleScrollRef;
         if (!element) return;
 
         const handleScroll = () => {
-            if (standalone) {
-                const windowHeight = window.innerHeight;
-                const documentHeight = document.documentElement.scrollHeight - windowHeight;
-                const scrollTop = window.scrollY;
-                const progress = (scrollTop / documentHeight) * 100;
-                setReadingProgress(Math.min(100, Math.max(0, progress)));
-            } else {
-                const scrollTop = element.scrollTop;
-                const scrollHeight = element.scrollHeight - element.clientHeight;
-                const progress = (scrollTop / scrollHeight) * 100;
-                setReadingProgress(Math.min(100, Math.max(0, progress)));
-            }
+            const scrollTop = element.scrollTop;
+            const scrollHeight = element.scrollHeight - element.clientHeight;
+            const progress = (scrollTop / scrollHeight) * 100;
+            setReadingProgress(Math.min(100, Math.max(0, progress)));
         };
-
-        if (standalone) {
-            window.addEventListener('scroll', handleScroll);
-            return () => window.removeEventListener('scroll', handleScroll);
-        }
 
         element.addEventListener('scroll', handleScroll);
         return () => element.removeEventListener('scroll', handleScroll);
-    }, [open, standalone, articleScrollRef]);
+    }, [open, articleScrollRef]);
 
     if (!article) return null;
 
@@ -90,135 +72,6 @@ export default function ArticleView({
     const textColor = theme.palette.text.primary;
     const mutedColor = theme.palette.text.secondary;
     const readingTime = article.readMins || estimateReadingTime(article.content || article.excerpt || '');
-
-    if (standalone) {
-        return (
-            <StudentLayout>
-                <Box
-                    sx={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: 3,
-                        bgcolor: `${COLORS.mediumPurple}30`,
-                        zIndex: 1400,
-                    }}
-                >
-                    <Box
-                        sx={{
-                            width: `${readingProgress}%`,
-                            height: '100%',
-                            bgcolor: COLORS.softPink,
-                            transition: 'width 0.1s ease',
-                        }}
-                    />
-                </Box>
-
-                <Box sx={{ maxWidth: 1200, mx: 'auto', py: 4, px: 2 }}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 3 }}>
-                        <Button
-                            startIcon={<ArrowBack />}
-                            onClick={() => router.visit(route('student.dashboard'))}
-                            sx={{
-                                color: mutedColor,
-                                textTransform: 'none',
-                                '&:hover': { color: theme.palette.primary.main },
-                            }}
-                        >
-                            Back to Dashboard
-                        </Button>
-
-                        <Stack direction="row" spacing={1}>
-                            <IconButton
-                                onClick={() => onToggleStar?.(article.id)}
-                                disabled={isTogglingStar}
-                                sx={{ color: isStarred ? theme.palette.primary.main : mutedColor }}
-                            >
-                                {isStarred ? <Star /> : <StarBorder />}
-                            </IconButton>
-                            <Typography variant="caption" sx={{ color: mutedColor, alignSelf: 'center', minWidth: 20 }}>
-                                {starCount}
-                            </Typography>
-                        </Stack>
-                    </Stack>
-
-                    <Grid container spacing={3}>
-                        <Grid item xs={12} md={8}>
-                            <Paper
-                                elevation={0}
-                                sx={{
-                                    p: 4,
-                                    borderRadius: 2,
-                                    bgcolor: bgColor,
-                                    maxHeight: 'calc(100vh - 200px)',
-                                    overflowY: 'auto',
-                                    '&::-webkit-scrollbar': { width: 8 },
-                                    '&::-webkit-scrollbar-track': {
-                                        background: isDark ? DARK_COLORS.border : '#f1f1f1',
-                                        borderRadius: 4,
-                                    },
-                                    '&::-webkit-scrollbar-thumb': {
-                                        background: isDark ? DARK_COLORS.mediumPurple : COLORS.mediumPurple,
-                                        borderRadius: 4,
-                                    },
-                                }}
-                                ref={setArticleScrollRef}
-                            >
-                                <ArticleContent
-                                    article={article}
-                                    readingTime={readingTime}
-                                    textColor={textColor}
-                                    mutedColor={mutedColor}
-                                    isDark={isDark}
-                                />
-                            </Paper>
-                        </Grid>
-
-                        <Grid item xs={12} md={4}>
-                            <Paper
-                                elevation={0}
-                                sx={{
-                                    p: 3,
-                                    borderRadius: 2,
-                                    bgcolor: bgColor,
-                                    position: 'sticky',
-                                    top: 20,
-                                    maxHeight: 'calc(100vh - 120px)',
-                                    overflowY: 'auto',
-                                    border: `1px solid ${isDark ? DARK_COLORS.border : `${COLORS.mediumPurple}20`}`,
-                                    '&::-webkit-scrollbar': { width: 8 },
-                                    '&::-webkit-scrollbar-track': {
-                                        background: isDark ? DARK_COLORS.border : '#f1f1f1',
-                                        borderRadius: 4,
-                                    },
-                                    '&::-webkit-scrollbar-thumb': {
-                                        background: isDark ? DARK_COLORS.mediumPurple : COLORS.mediumPurple,
-                                        borderRadius: 4,
-                                    },
-                                }}
-                                ref={setCommentScrollRef}
-                            >
-                                <Typography variant="h6" sx={{ color: textColor, mb: 2, fontWeight: 600 }}>
-                                    Discussion ({article.commentCount || 0})
-                                </Typography>
-                                <CommentSection
-                                    comments={article.comments || []}
-                                    isDark={isDark}
-                                    textColor={textColor}
-                                    mutedColor={mutedColor}
-                                    onSubmitComment={onSubmitComment}
-                                    isSubmitting={isSubmittingComment}
-                                    currentUserName={currentUserName}
-                                    errorMessage={commentError}
-                                />
-                            </Paper>
-                        </Grid>
-                    </Grid>
-                </Box>
-            </StudentLayout>
-        );
-    }
 
     return (
         <Modal

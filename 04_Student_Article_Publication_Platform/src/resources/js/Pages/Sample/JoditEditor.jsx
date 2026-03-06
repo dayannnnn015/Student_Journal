@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import JoditEditor from '../Shared/JoditEditor';
+import JoditEditor from '@/Components/JoditEditor';
 
 export default function JoditEditorSample() {
     const [value, setValue] = useState('');
@@ -11,3 +11,4 @@ export default function JoditEditorSample() {
         </div>
     );
 }
+

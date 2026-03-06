@@ -1,4 +1,4 @@
-import StudentLayout from '../Shared/Layouts/StudentLayout';
+import StudentLayout from '@/Layouts/StudentLayout';
 import ArticleCard from './Components/ArticleCard';
 
 export default function BrowseArticles({ articles = [] }) {
@@ -11,3 +11,4 @@ export default function BrowseArticles({ articles = [] }) {
         </StudentLayout>
     );
 }
+

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import StudentLayout from '../../Shared/Layouts/StudentLayout';
+import StudentLayout from '@/Layouts/StudentLayout';
 import { useTheme } from '@/Contexts/ThemeContext';
 import axios from 'axios';
 
@@ -334,3 +334,4 @@ export default function AppearanceSettings() {
         </StudentLayout>
     );
 }
+

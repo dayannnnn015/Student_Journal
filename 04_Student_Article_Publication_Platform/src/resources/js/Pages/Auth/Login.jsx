@@ -25,8 +25,14 @@ export default function Login({ status, canResetPassword }) {
         <GuestLayout>
             <Head title="Log in" />
 
+            <div className="mb-5 border-b pb-4">
+                <p className="text-xs font-mono uppercase tracking-[0.2em] text-gray-600">Account Access</p>
+                <h1 className="mt-1 font-serif text-3xl font-black">Sign In</h1>
+                <p className="mt-2 text-sm text-gray-700">Use your account credentials to continue to your dashboard.</p>
+            </div>
+
             {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
+                <div className="mb-4 rounded border border-green-200 bg-green-50 p-3 text-sm font-medium text-green-700">
                     {status}
                 </div>
             )}
@@ -70,24 +76,22 @@ export default function Login({ status, canResetPassword }) {
                         <Checkbox
                             name="remember"
                             checked={data.remember}
-                            onChange={(e) =>
-                                setData('remember', e.target.checked)
-                            }
+                            onChange={(e) => setData('remember', e.target.checked)}
                         />
-                        <span className="ms-2 text-sm text-gray-600">
-                            Remember me
-                        </span>
+                        <span className="ms-2 text-sm text-gray-600">Remember me</span>
                     </label>
                 </div>
 
-                <div className="mt-4 flex items-center justify-end">
-                    {canResetPassword && (
+                <div className="mt-6 flex items-center justify-between">
+                    {canResetPassword ? (
                         <Link
                             href={route('password.request')}
                             className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                         >
                             Forgot your password?
                         </Link>
+                    ) : (
+                        <span />
                     )}
 
                     <PrimaryButton className="ms-4" disabled={processing}>
@@ -95,6 +99,15 @@ export default function Login({ status, canResetPassword }) {
                     </PrimaryButton>
                 </div>
             </form>
+
+            <div className="mt-5 flex justify-end">
+                <Link
+                    href={route('register')}
+                    className="text-xs font-mono uppercase tracking-[0.15em] text-gray-600 underline"
+                >
+                    No account? Register
+                </Link>
+            </div>
         </GuestLayout>
     );
 }

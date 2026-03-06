@@ -1,4 +1,4 @@
-import StudentLayout from '../Shared/Layouts/StudentLayout';
+import StudentLayout from '@/Layouts/StudentLayout';
 import CommentSection from './Components/CommentSection';
 
 export default function ArticleView({ article }) {
@@ -10,3 +10,4 @@ export default function ArticleView({ article }) {
         </StudentLayout>
     );
 }
+

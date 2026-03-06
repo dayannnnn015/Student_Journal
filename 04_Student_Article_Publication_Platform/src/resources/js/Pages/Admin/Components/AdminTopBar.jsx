@@ -15,12 +15,23 @@ import {
 } from '@mui/material';
 import {
     AdminPanelSettingsRounded,
+    ArticleRounded,
+    AssessmentRounded,
     LogoutRounded,
     ManageAccountsRounded,
     PaletteRounded,
+    SettingsRounded,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { NEWSPAPER_THEMES, getThemeColors, useThemeContext } from '@/Components/ThemeContext';
+
+const NAV_ITEMS = [
+    { key: 'dashboard', label: 'Dashboard', action: () => router.visit('/admin/dashboard') },
+    { key: 'users', label: 'Users', action: () => router.visit('/admin/users') },
+    { key: 'articles', label: 'Articles', action: () => router.visit('/articles') },
+    { key: 'reports', label: 'Reports', action: () => router.visit('/admin/dashboard#live-reports') },
+    { key: 'settings', label: 'Settings', action: () => router.visit('/profile') },
+];
 
 export default function AdminTopBar({ active = 'dashboard' }) {
     const { auth } = usePage().props;
@@ -64,45 +75,35 @@ export default function AdminTopBar({ active = 'dashboard' }) {
                     </Box>
                     <Box>
                         <Typography fontWeight={800} sx={{ color: colors.newsprint }}>
-                            FYI Admin Dashboard
+                            FYI Admin Panel
                         </Typography>
                         <Typography variant="caption" sx={{ color: colors.byline }}>
-                            Platform administration
+                            Operations, moderation, and user control
                         </Typography>
                     </Box>
                 </Stack>
 
-                <Stack direction="row" spacing={1} alignItems="center">
-                    <Button
-                        variant={active === 'dashboard' ? 'contained' : 'outlined'}
-                        onClick={() => router.visit('/admin/dashboard')}
-                        sx={{
-                            bgcolor: active === 'dashboard' ? colors.newsprint : 'transparent',
-                            borderColor: colors.newsprint,
-                            color: active === 'dashboard' ? colors.paper : colors.newsprint,
-                            '&:hover': {
-                                bgcolor: active === 'dashboard' ? colors.accent : alpha(colors.newsprint, 0.08),
+                <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
+                    {NAV_ITEMS.map((item) => (
+                        <Button
+                            key={item.key}
+                            size="small"
+                            variant={active === item.key ? 'contained' : 'outlined'}
+                            onClick={item.action}
+                            sx={{
+                                bgcolor: active === item.key ? colors.newsprint : 'transparent',
                                 borderColor: colors.newsprint,
-                            },
-                        }}
-                    >
-                        Dashboard
-                    </Button>
-                    <Button
-                        variant={active === 'users' ? 'contained' : 'outlined'}
-                        onClick={() => router.visit('/admin/users')}
-                        sx={{
-                            bgcolor: active === 'users' ? colors.newsprint : 'transparent',
-                            borderColor: colors.newsprint,
-                            color: active === 'users' ? colors.paper : colors.newsprint,
-                            '&:hover': {
-                                bgcolor: active === 'users' ? colors.accent : alpha(colors.newsprint, 0.08),
-                                borderColor: colors.newsprint,
-                            },
-                        }}
-                    >
-                        User Management
-                    </Button>
+                                color: active === item.key ? colors.paper : colors.newsprint,
+                                '&:hover': {
+                                    bgcolor: active === item.key ? colors.accent : alpha(colors.newsprint, 0.08),
+                                    borderColor: colors.newsprint,
+                                },
+                            }}
+                            startIcon={item.key === 'articles' ? <ArticleRounded fontSize="small" /> : item.key === 'reports' ? <AssessmentRounded fontSize="small" /> : item.key === 'settings' ? <SettingsRounded fontSize="small" /> : null}
+                        >
+                            {item.label}
+                        </Button>
+                    ))}
 
                     <Tooltip title="Theme Picker">
                         <IconButton onClick={(e) => setThemeAnchor(e.currentTarget)}>
@@ -131,7 +132,7 @@ export default function AdminTopBar({ active = 'dashboard' }) {
                         <Stack direction="row" alignItems="center" spacing={1} sx={{ minWidth: 180 }}>
                             <Typography component="span">{theme.icon}</Typography>
                             <Typography>{theme.name}</Typography>
-                            {currentTheme === key && <Typography sx={{ ml: 'auto' }}>?</Typography>}
+                            {currentTheme === key && <Typography sx={{ ml: 'auto' }}>OK</Typography>}
                         </Stack>
                     </MenuItem>
                 ))}
@@ -164,4 +165,3 @@ export default function AdminTopBar({ active = 'dashboard' }) {
         </Paper>
     );
 }
-
