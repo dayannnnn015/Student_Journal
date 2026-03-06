@@ -39,10 +39,10 @@ const MetricBadge = ({ icon, value, color, tooltip }) => {
   return (
     <Tooltip title={tooltip} arrow placement="top">
       <Stack direction="row" spacing={0.5} alignItems="center">
-        <Box sx={{ color: isDark ? DARK_COLORS.textSecondary : color, display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ color: theme.palette.text.secondary, display: 'flex', alignItems: 'center' }}>
           {icon}
         </Box>
-        <Typography variant="caption" sx={{ fontWeight: 600, color: isDark ? DARK_COLORS.textSecondary : 'text.primary' }}>
+        <Typography variant="caption" sx={{ fontWeight: 700, color: theme.palette.text.secondary, fontFamily: theme.typography.fontFamily }}>
           {value}
         </Typography>
       </Stack>
@@ -60,13 +60,15 @@ const CategoryChip = ({ label, color, isDark }) => {
       label={label}
       size="small"
       sx={{
-        height: 24,
-        fontSize: '0.75rem',
-        fontWeight: 600,
-        bgcolor: isDarkMode ? alpha(DARK_COLORS.royalPurple, 0.2) : alpha(COLORS.royalPurple, 0.1),
-        color: isDarkMode ? DARK_COLORS.royalPurple : COLORS.royalPurple,
-        borderRadius: 1,
-        '& .MuiChip-label': { px: 1.5 },
+        height: 22,
+        fontSize: '0.72rem',
+        fontWeight: 700,
+        bgcolor: theme.palette.action.selected,
+        color: theme.palette.primary.main,
+        borderRadius: 0,
+        border: `1px solid ${theme.palette.divider}`,
+        fontFamily: theme.typography.fontFamily,
+        '& .MuiChip-label': { px: 1.2 },
       }}
     />
   );
@@ -84,36 +86,40 @@ const EmptyState = ({ icon, title, description, actionLabel, onClick }) => {
         sx={{
           p: 6,
           textAlign: 'center',
-          borderRadius: 3,
-          border: `1px dashed ${isDark ? alpha(DARK_COLORS.border, 0.5) : alpha(COLORS.mediumPurple, 0.2)}`,
-          bgcolor: isDark ? alpha(DARK_COLORS.cardBg, 0.5) : 'background.paper',
+          borderRadius: 0,
+          border: `2px double ${theme.palette.divider}`,
+          bgcolor: theme.palette.background.paper,
+          boxShadow: theme.shadows[2],
         }}
       >
         <Box sx={{
-          color: isDark ? DARK_COLORS.mediumPurple : COLORS.mediumPurple,
+          color: theme.palette.primary.main,
           mb: 2,
           transform: 'scale(1.5)',
         }}>
           {icon}
         </Box>
-        <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, color: 'text.primary' }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, mb: 1, color: theme.palette.text.primary, fontFamily: theme.typography.fontFamily }}>
           {title}
         </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3, maxWidth: 300, mx: 'auto' }}>
+        <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 3, maxWidth: 340, mx: 'auto', fontFamily: theme.typography.fontFamily }}>
           {description}
         </Typography>
         <Button
-          variant="contained"
+          variant="outlined"
           onClick={onClick}
           endIcon={<ArrowForward />}
           sx={{
-            bgcolor: isDark ? DARK_COLORS.softPink : COLORS.softPink,
-            color: '#fff',
-            borderRadius: 2,
+            borderColor: theme.palette.text.primary,
+            color: theme.palette.text.primary,
+            borderRadius: 0,
             textTransform: 'none',
             px: 3,
+            fontWeight: 700,
+            fontFamily: theme.typography.fontFamily,
             '&:hover': {
-              bgcolor: isDark ? DARK_COLORS.royalPurple : COLORS.royalPurple,
+              bgcolor: theme.palette.text.primary,
+              color: theme.palette.background.paper,
             },
           }}
         >
@@ -235,49 +241,68 @@ export default function FeedSection({
       elevation={0}
       sx={{
         p: { xs: 2, md: 3 },
-        borderRadius: 3,
-        border: `1px solid ${isDark ? alpha(DARK_COLORS.border, 0.5) : alpha(COLORS.mediumPurple, 0.12)}`,
-        bgcolor: 'background.paper',
+        borderRadius: 0,
+        border: `2px solid ${theme.palette.divider}`,
+        bgcolor: theme.palette.background.default,
+        boxShadow: theme.shadows[2],
+        fontFamily: theme.typography.fontFamily,
       }}
     >
-      {/* Header Section */}
-      <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={2}
-        justifyContent="space-between"
-        alignItems={{ xs: 'stretch', sm: 'center' }}
-        sx={{ mb: 3 }}
-      >
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Typography variant="h2" sx={{ fontWeight: 700, color: 'text.primary' }}>
-            {activeNav === 'saved' ? 'Saved Articles' : 'Your Feed'}
+      {/* Masthead Header Section */}
+      <Box sx={{
+        borderBottom: `4px double ${theme.palette.divider}`,
+        mb: 3,
+        pb: 1.5,
+        display: 'flex',
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: { xs: 'flex-start', sm: 'center' },
+        justifyContent: 'space-between',
+        gap: 2,
+      }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Typography
+            variant="h2"
+            sx={{
+              fontWeight: 900,
+              color: theme.palette.text.primary,
+              fontFamily: theme.typography.fontFamily,
+              letterSpacing: 1,
+              textTransform: 'uppercase',
+              fontSize: { xs: '1.5rem', md: '2.2rem' },
+              mr: 1,
+            }}
+          >
+            {activeNav === 'saved' ? 'Saved Articles' : 'Student Journal'}
           </Typography>
           {filteredArticles.length > 0 && (
             <Chip
               label={filteredArticles.length}
               size="small"
               sx={{
-                bgcolor: isDark ? alpha(DARK_COLORS.softPink, 0.1) : alpha(COLORS.softPink, 0.1),
-                color: isDark ? DARK_COLORS.softPink : COLORS.softPink,
-                fontWeight: 600,
-                borderRadius: 1.5,
+                bgcolor: theme.palette.background.paper,
+                color: theme.palette.text.primary,
+                fontWeight: 700,
+                borderRadius: 0,
+                border: `1px solid ${theme.palette.divider}`,
+                fontFamily: theme.typography.fontFamily,
               }}
             />
           )}
-        </Stack>
-
+        </Box>
         <FormControl size="small" sx={{ minWidth: 180 }}>
           <Select
             value={sortBy}
             onChange={(event) => onSortChange(event.target.value)}
             sx={{
-              borderRadius: 2,
-              color: 'text.primary',
+              borderRadius: 0,
+              color: theme.palette.text.primary,
+              fontFamily: theme.typography.fontFamily,
+              border: `1px solid ${theme.palette.divider}`,
               '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: isDark ? alpha(DARK_COLORS.border, 0.5) : alpha(COLORS.mediumPurple, 0.2),
+                borderColor: theme.palette.divider,
               },
               '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: isDark ? DARK_COLORS.softPink : COLORS.softPink,
+                borderColor: theme.palette.text.primary,
               },
             }}
           >
@@ -288,7 +313,7 @@ export default function FeedSection({
             ))}
           </Select>
         </FormControl>
-      </Stack>
+      </Box>
 
       {/* Empty States */}
       {activeNav === 'saved' && filteredArticles.length === 0 && (
@@ -324,22 +349,21 @@ export default function FeedSection({
                 elevation={0}
                 onClick={() => onOpenArticle(article.id)}
                 sx={{
-                  p: 2.5,
-                  borderRadius: 2,
-                  border: `1px solid ${isDark ? alpha(DARK_COLORS.border, 0.5) : alpha(COLORS.mediumPurple, 0.12)}`,
+                  p: 3,
+                  borderRadius: 0,
+                  border: `1.5px solid ${theme.palette.divider}`,
+                  boxShadow: theme.shadows[1],
                   transition: 'all 250ms ease',
                   cursor: 'pointer',
                   position: 'relative',
                   overflow: 'hidden',
-                  bgcolor: 'background.paper',
+                  bgcolor: theme.palette.background.paper,
+                  fontFamily: theme.typography.fontFamily,
                   '&:hover': {
-                    transform: 'translateY(-2px)',
-                    borderColor: isDark ? DARK_COLORS.softPink : COLORS.softPink,
-                    boxShadow: isDark
-                      ? `0 8px 24px ${alpha(DARK_COLORS.softPink, 0.15)}`
-                      : `0 8px 24px ${alpha(COLORS.softPink, 0.15)}`,
+                    boxShadow: theme.shadows[4],
+                    borderColor: theme.palette.text.primary,
+                    background: theme.palette.action.hover,
                   },
-                  // Progress bar on top edge
                   '&::after': article.progress > 0 ? {
                     content: '""',
                     position: 'absolute',
@@ -347,7 +371,7 @@ export default function FeedSection({
                     left: 0,
                     width: `${article.progress}%`,
                     height: '3px',
-                    background: `linear-gradient(90deg, ${isDark ? DARK_COLORS.softPink : COLORS.softPink}, ${isDark ? DARK_COLORS.royalPurple : COLORS.royalPurple})`,
+                    background: theme.palette.primary.main,
                     transition: 'width 300ms ease',
                   } : {},
                   '&::before': isHot ? {
@@ -359,8 +383,8 @@ export default function FeedSection({
                     height: 0,
                     borderStyle: 'solid',
                     borderWidth: '0 30px 30px 0',
-                    borderColor: `transparent ${COLORS.warning} transparent transparent`,
-                    opacity: 0.8,
+                    borderColor: `transparent ${theme.palette.warning.main} transparent transparent`,
+                    opacity: 0.7,
                   } : {},
                 }}
               >
@@ -368,22 +392,8 @@ export default function FeedSection({
                   {/* Top Row - Categories & Metadata */}
                   <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
                     <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap' }}>
-                      <Chip
-                        label={article.category}
-                        size="small"
-                        sx={{
-                          bgcolor: isDark ? alpha(DARK_COLORS.royalPurple, 0.2) : alpha(COLORS.royalPurple, 0.1),
-                          color: isDark ? DARK_COLORS.royalPurple : COLORS.royalPurple,
-                          fontWeight: 600,
-                          borderRadius: 1,
-                          height: 24,
-                          fontSize: '0.75rem',
-                        }}
-                      />
-                      {/* Reading time removed */}
-                      {/* Progress chip removed - nothing rendered here */}
+                      <CategoryChip label={article.category} />
                     </Stack>
-
                     <Tooltip title={bookmarked ? "Remove bookmark" : "Save article"}>
                       <IconButton
                         size="small"
@@ -392,9 +402,9 @@ export default function FeedSection({
                           onToggleBookmark(article.id);
                         }}
                         sx={{
-                          color: bookmarked ? (isDark ? DARK_COLORS.softPink : COLORS.softPink) : 'text.disabled',
+                          color: bookmarked ? '#b30000' : '#888',
                           '&:hover': {
-                            bgcolor: isDark ? alpha(DARK_COLORS.softPink, 0.1) : alpha(COLORS.softPink, 0.1),
+                            bgcolor: '#eee',
                           },
                         }}
                       >
@@ -402,17 +412,18 @@ export default function FeedSection({
                       </IconButton>
                     </Tooltip>
                   </Stack>
-
                   {/* Title & Excerpt */}
                   <Box>
                     <Typography
                       variant="h3"
                       sx={{
-                        fontWeight: 700,
+                        fontWeight: 900,
                         mb: 1,
-                        lineHeight: 1.3,
-                        color: 'text.primary',
-                        fontSize: '1.1rem',
+                        lineHeight: 1.2,
+                        color: '#111',
+                        fontSize: '1.25rem',
+                        fontFamily: 'Georgia, Times, "Times New Roman", serif',
+                        letterSpacing: 0.2,
                       }}
                     >
                       {article.title}
@@ -420,7 +431,9 @@ export default function FeedSection({
                     <Typography
                       variant="body2"
                       sx={{
-                        color: 'text.secondary',
+                        color: '#444',
+                        fontFamily: 'Georgia, Times, "Times New Roman", serif',
+                        fontSize: '1rem',
                         display: '-webkit-box',
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: 'vertical',
@@ -430,44 +443,45 @@ export default function FeedSection({
                       {article.excerpt}
                     </Typography>
                   </Box>
-
                   {/* Metrics Row */}
                   <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <Stack direction="row" spacing={2} alignItems="center">
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <Visibility sx={{ fontSize: 16, color: 'text.disabled' }} />
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                        <Visibility sx={{ fontSize: 16, color: theme.palette.text.disabled }} />
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.text.disabled, fontFamily: theme.typography.fontFamily }}>
                           {(article.viewCount || 0).toLocaleString()}
                         </Typography>
                       </Stack>
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <ChatBubbleOutline sx={{ fontSize: 16, color: 'text.disabled' }} />
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                        <ChatBubbleOutline sx={{ fontSize: 16, color: theme.palette.text.disabled }} />
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.text.disabled, fontFamily: theme.typography.fontFamily }}>
                           {article.commentCount || 0}
                         </Typography>
                       </Stack>
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <Star sx={{ fontSize: 16, color: 'text.disabled' }} />
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+                        <Star sx={{ fontSize: 16, color: theme.palette.text.disabled }} />
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: theme.palette.text.disabled, fontFamily: theme.typography.fontFamily }}>
                           {article.starCount || 0}
                         </Typography>
                       </Stack>
                     </Stack>
-
                     <Button
-                      variant="text"
+                      variant="outlined"
                       onClick={(e) => {
                         e.stopPropagation();
                         onOpenArticle(article.id);
                       }}
                       endIcon={<ArrowForward />}
                       sx={{
-                        color: isDark ? DARK_COLORS.softPink : COLORS.softPink,
+                        color: theme.palette.text.primary,
+                        borderColor: theme.palette.text.primary,
+                        borderRadius: 0,
                         textTransform: 'none',
-                        fontWeight: 600,
+                        fontWeight: 700,
+                        fontFamily: theme.typography.fontFamily,
                         '&:hover': {
-                          bgcolor: 'transparent',
-                          gap: '4px',
+                          bgcolor: theme.palette.text.primary,
+                          color: theme.palette.background.paper,
                         },
                       }}
                     >

@@ -29,6 +29,7 @@ import StudentLayout from '../../Shared/Layouts/StudentLayout';
 import CommentSection from './CommentSection';
 import RecommendedList from './RecommendedList';
 import { COLORS, DARK_COLORS, estimateReadingTime } from '../DashboardSections/dashboardTheme';
+import { useTheme } from '@mui/material';
 
 export default function ArticleView({
     article,
@@ -83,10 +84,11 @@ export default function ArticleView({
 
     if (!article) return null;
 
-    const isDark = mode === 'dark';
-    const bgColor = isDark ? DARK_COLORS.cardBg : '#FFFFFF';
-    const textColor = isDark ? DARK_COLORS.textPrimary : COLORS.deepPurple;
-    const mutedColor = isDark ? DARK_COLORS.mediumPurple : COLORS.mediumPurple;
+    const theme = useTheme();
+    const isDark = mode === 'dark' || theme.palette.mode === 'dark';
+    const bgColor = theme.palette.background.paper;
+    const textColor = theme.palette.text.primary;
+    const mutedColor = theme.palette.text.secondary;
     const readingTime = article.readMins || estimateReadingTime(article.content || article.excerpt || '');
 
     if (standalone) {
@@ -121,7 +123,7 @@ export default function ArticleView({
                             sx={{
                                 color: mutedColor,
                                 textTransform: 'none',
-                                '&:hover': { color: COLORS.softPink },
+                                '&:hover': { color: theme.palette.primary.main },
                             }}
                         >
                             Back to Dashboard
@@ -131,7 +133,7 @@ export default function ArticleView({
                             <IconButton
                                 onClick={() => onToggleStar?.(article.id)}
                                 disabled={isTogglingStar}
-                                sx={{ color: isStarred ? COLORS.softPink : mutedColor }}
+                                sx={{ color: isStarred ? theme.palette.primary.main : mutedColor }}
                             >
                                 {isStarred ? <Star /> : <StarBorder />}
                             </IconButton>
@@ -408,6 +410,7 @@ export default function ArticleView({
 }
 
 function ArticleContent({ article, readingTime, textColor, mutedColor, isDark }) {
+    const theme = useTheme();
     const liveViews =
         typeof article.views === 'number'
             ? article.views
@@ -419,68 +422,66 @@ function ArticleContent({ article, readingTime, textColor, mutedColor, isDark })
 
     return (
         <Stack spacing={2}>
-            <Stack spacing={2}>
-                <Typography
-                    variant="h1"
-                    sx={{ fontSize: { xs: 24, md: 32 }, fontWeight: 700, color: textColor, lineHeight: 1.2 }}
-                >
-                    {article.title}
-                </Typography>
+            <Typography
+                variant="h1"
+                sx={{ fontSize: { xs: 24, md: 32 }, fontWeight: 700, color: theme.palette.text.primary, lineHeight: 1.2 }}
+            >
+                {article.title}
+            </Typography>
 
-                <Stack direction="row" spacing={2} alignItems="center" sx={{ flexWrap: 'wrap' }}>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                        <Avatar
-                            sx={{ width: 32, height: 32, bgcolor: COLORS.softPink, fontSize: 14, fontWeight: 600 }}
-                        >
-                            {article.author?.charAt(0) || 'A'}
-                        </Avatar>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: textColor }}>
-                            {article.author || 'Journal Editorial Board'}
+            <Stack direction="row" spacing={2} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                    <Avatar
+                        sx={{ width: 32, height: 32, bgcolor: theme.palette.primary.main, fontSize: 14, fontWeight: 600 }}
+                    >
+                        {article.author?.charAt(0) || 'A'}
+                    </Avatar>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+                        {article.author || 'Journal Editorial Board'}
+                    </Typography>
+                </Stack>
+
+                <Stack direction="row" spacing={1.5} divider={<Divider orientation="vertical" flexItem />}>
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                        <Schedule sx={{ fontSize: 16, color: theme.palette.text.secondary }} />
+                        <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                            {article.publishedAt
+                                ? new Date(article.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                                : 'Unpublished'}
                         </Typography>
                     </Stack>
-
-                    <Stack direction="row" spacing={1.5} divider={<Divider orientation="vertical" flexItem />}>
+                    {liveViews !== null && (
                         <Stack direction="row" spacing={0.5} alignItems="center">
-                            <Schedule sx={{ fontSize: 16, color: mutedColor }} />
-                            <Typography variant="caption" sx={{ color: mutedColor }}>
-                                {article.publishedAt
-                                    ? new Date(article.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                                    : 'Unpublished'}
+                            <Visibility sx={{ fontSize: 16, color: theme.palette.text.secondary }} />
+                            <Typography variant="caption" sx={{ color: theme.palette.text.secondary }}>
+                                {liveViews.toLocaleString()} views
                             </Typography>
                         </Stack>
-                        {liveViews !== null && (
-                            <Stack direction="row" spacing={0.5} alignItems="center">
-                                <Visibility sx={{ fontSize: 16, color: mutedColor }} />
-                                <Typography variant="caption" sx={{ color: mutedColor }}>
-                                    {liveViews.toLocaleString()} views
-                                </Typography>
-                            </Stack>
-                        )}
-                    </Stack>
+                    )}
                 </Stack>
             </Stack>
 
             <Box
                 sx={{
                     mt: 2,
-                    '& p': { fontSize: 16, lineHeight: 1.7, color: textColor, mb: 2 },
-                    '& h2': { fontSize: 24, fontWeight: 600, color: textColor, mt: 4, mb: 2 },
+                    '& p': { fontSize: 16, lineHeight: 1.7, color: theme.palette.text.primary, mb: 2 },
+                    '& h2': { fontSize: 24, fontWeight: 600, color: theme.palette.text.primary, mt: 4, mb: 2 },
                     '& h3': {
                         fontSize: 20,
                         fontWeight: 600,
-                        color: isDark ? DARK_COLORS.royalPurple : COLORS.royalPurple,
+                        color: theme.palette.primary.main,
                         mt: 3,
                         mb: 1.5,
                     },
                     '& blockquote': {
-                        borderLeft: `4px solid ${COLORS.softPink}`,
-                        bgcolor: isDark ? `${DARK_COLORS.royalPurple}20` : `${COLORS.royalPurple}08`,
+                        borderLeft: `4px solid ${theme.palette.primary.main}`,
+                        bgcolor: theme.palette.action.selected,
                         py: 1,
                         px: 3,
                         my: 3,
                         borderRadius: 1,
                         fontStyle: 'italic',
-                        color: isDark ? DARK_COLORS.royalPurple : COLORS.royalPurple,
+                        color: theme.palette.primary.main,
                     },
                 }}
             >
@@ -498,11 +499,7 @@ function ArticleContent({ article, readingTime, textColor, mutedColor, isDark })
                             key={tag}
                             label={tag}
                             size="small"
-                            sx={{
-                                bgcolor: isDark ? `${DARK_COLORS.royalPurple}30` : `${COLORS.mediumPurple}15`,
-                                color: isDark ? DARK_COLORS.royalPurple : COLORS.mediumPurple,
-                                borderRadius: 1.5,
-                            }}
+                            sx={{ bgcolor: theme.palette.primary.main, color: theme.palette.primary.contrastText }}
                         />
                     ))}
                 </Stack>

@@ -1,35 +1,170 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { useState, useRef } from 'react';
-import AuthModal from '@/Components/AuthModal'; // Import the AuthModal component
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { useState, useRef, useEffect } from 'react';
+import AuthModal from '@/Components/AuthModal';
 
 export default function Welcome({ auth, recentArticles = [] }) {
-    // `recentArticles` now comes from backend public-approved content.
     const [isFlipped, setIsFlipped] = useState(false);
     const [showAuth, setShowAuth] = useState(false);
-    const [authMode, setAuthMode] = useState('login'); // Add this state
+    const [authMode, setAuthMode] = useState('login');
+    const [currentTheme, setCurrentTheme] = useState('classic');
+    const [showThemePicker, setShowThemePicker] = useState(false);
+    const [currentTime, setCurrentTime] = useState(new Date());
     const targetRef = useRef(null);
     const { scrollYProgress } = useScroll({
         target: targetRef,
         offset: ["start start", "end start"]
     });
 
+    // Update time for newspaper dateline
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 60000);
+        return () => clearInterval(timer);
+    }, []);
+
     const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
     const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
 
-    // Color theme based on your specified colors
-    const colors = {
-        deepPurple: '#37306B',
-        royalPurple: '#66347F',
-        mediumPurple: '#9E4784',
-        softPink: '#D27685',
+    // Multiple newspaper color themes
+    const themes = {
+        // Classic Black & White
+        classic: {
+            name: 'Classic',
+            icon: '📰',
+            newsprint: '#1a1a1a',
+            paper: '#f8f8f8',
+            aged: '#f0f0f0',
+            ink: '#2c2c2c',
+            accent: '#4a4a4a',
+            border: '#d4d4d4',
+            byline: '#666666',
+            headline: '#1a1a1a',
+            accent1: '#4a4a4a',
+            accent2: '#666666',
+        },
+
+        // Vintage Sepia
+        vintage: {
+            name: 'Vintage',
+            icon: '📜',
+            newsprint: '#5c4b3c',
+            paper: '#f4ecd8',
+            aged: '#e8d9c5',
+            ink: '#3e3328',
+            accent: '#8b7a66',
+            border: '#cbb99f',
+            byline: '#7f6e5a',
+            headline: '#4a3c2f',
+            accent1: '#a48d76',
+            accent2: '#b6a187',
+        },
+
+        // Modern Minimal
+        modern: {
+            name: 'Modern',
+            icon: '✨',
+            newsprint: '#0a0a0a',
+            paper: '#ffffff',
+            aged: '#fafafa',
+            ink: '#1e1e1e',
+            accent: '#757575',
+            border: '#e0e0e0',
+            byline: '#9e9e9e',
+            headline: '#212121',
+            accent1: '#616161',
+            accent2: '#424242',
+        },
+
+        // Financial Times Pink
+        financial: {
+            name: 'Financial',
+            icon: '📈',
+            newsprint: '#2c2c2c',
+            paper: '#fff1e0',
+            aged: '#ffe8d4',
+            ink: '#333333',
+            accent: '#ff8c69',
+            border: '#ffb399',
+            byline: '#ff6b4a',
+            headline: '#2b2b2b',
+            accent1: '#ff5252',
+            accent2: '#ff7b7b',
+        },
+
+        // Broadsheet Blue
+        broadsheet: {
+            name: 'Broadsheet',
+            icon: '🌊',
+            newsprint: '#1e2b3c',
+            paper: '#f0f4fa',
+            aged: '#e4ecf5',
+            ink: '#2c3e50',
+            accent: '#3498db',
+            border: '#bdd8f0',
+            byline: '#5d7a9a',
+            headline: '#1a2634',
+            accent1: '#2980b9',
+            accent2: '#4a6fa5',
+        },
+
+        // Berliner Burgundy
+        berliner: {
+            name: 'Berliner',
+            icon: '🇩🇪',
+            newsprint: '#2d1f24',
+            paper: '#f5ece9',
+            aged: '#efe1dc',
+            ink: '#3c2a30',
+            accent: '#9e4a5c',
+            border: '#ddc5c0',
+            byline: '#b28b95',
+            headline: '#351f26',
+            accent1: '#b45d6f',
+            accent2: '#a1455a',
+        },
+
+        // Guardian Green
+        guardian: {
+            name: 'Guardian',
+            icon: '🌿',
+            newsprint: '#1f3a3a',
+            paper: '#f0f7f0',
+            aged: '#e4f0e4',
+            ink: '#2d4a4a',
+            accent: '#2e8b57',
+            border: '#b8d9b8',
+            byline: '#4f7a4f',
+            headline: '#1d3535',
+            accent1: '#3cb371',
+            accent2: '#66b266',
+        },
+
+        // Sunset Edition
+        sunset: {
+            name: 'Sunset',
+            icon: '🌅',
+            newsprint: '#3a2618',
+            paper: '#fff1e6',
+            aged: '#ffe4d6',
+            ink: '#4a3322',
+            accent: '#ff9966',
+            border: '#ffccbb',
+            byline: '#cc8866',
+            headline: '#442e1c',
+            accent1: '#ff884d',
+            accent2: '#ffaa80',
+        }
     };
+
+    const colors = themes[currentTheme];
 
     const features = [
         {
             icon: (
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                 </svg>
             ),
             title: 'Publish Your Voice',
@@ -38,8 +173,8 @@ export default function Welcome({ auth, recentArticles = [] }) {
         {
             icon: (
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
             ),
             title: 'Peer Review',
@@ -48,7 +183,7 @@ export default function Welcome({ auth, recentArticles = [] }) {
         {
             icon: (
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
                 </svg>
             ),
             title: 'Engage & Discuss',
@@ -57,7 +192,7 @@ export default function Welcome({ auth, recentArticles = [] }) {
         {
             icon: (
                 <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
             ),
             title: 'Track Impact',
@@ -83,200 +218,434 @@ export default function Welcome({ auth, recentArticles = [] }) {
         }
     ];
 
+    const featuredArticles = recentArticles.slice(0, 2);
+    const secondaryArticles = recentArticles.slice(2, 5);
+
+    const formatDate = (date) => {
+        return date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        }).toUpperCase();
+    };
+
     return (
         <>
             <Head title="FYI - Student Journal" />
 
-            {/* Navigation */}
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-transparent backdrop-blur-lg border-b border-white/10">
-                <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="text-4xl font-black tracking-tighter"
-                        style={{ color: colors.softPink }}
-                    >
-                        FYI
-                    </motion.div>
+            {/* Theme Picker Button */}
+            <div className="fixed bottom-6 right-6 z-50">
+                <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setShowThemePicker(!showThemePicker)}
+                    className="w-14 h-14 rounded-full shadow-lg flex items-center justify-center text-2xl"
+                    style={{
+                        backgroundColor: colors.accent,
+                        color: colors.paper
+                    }}
+                >
+                    🎨
+                </motion.button>
 
-                    {!auth.user && !showAuth && (
+                <AnimatePresence>
+                    {showThemePicker && (
                         <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="flex gap-4"
+                            initial={{ opacity: 0, y: 20, scale: 0.8 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 20, scale: 0.8 }}
+                            className="absolute bottom-16 right-0 p-4 rounded-lg shadow-xl min-w-[200px]"
+                            style={{
+                                backgroundColor: colors.paper,
+                                borderColor: colors.border,
+                                borderWidth: '1px'
+                            }}
                         >
-                            <button
-                                onClick={() => {
-                                    setAuthMode('login');
-                                    setShowAuth(true);
-                                }}
-                                className="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white font-medium transition"
-                            >
-                                Sign In
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setAuthMode('register');
-                                    setShowAuth(true);
-                                }}
-                                className="px-6 py-2 rounded-lg text-white font-medium transition"
-                                style={{
-                                    background: `linear-gradient(135deg, ${colors.deepPurple} 0%, ${colors.royalPurple} 50%, ${colors.mediumPurple} 100%)`,
-                                }}
-                            >
-                                Get Started
-                            </button>
+                            <h3 className="font-serif text-sm font-bold mb-3" style={{ color: colors.newsprint }}>
+                                Newspaper Themes
+                            </h3>
+                            <div className="space-y-2">
+                                {Object.entries(themes).map(([key, theme]) => (
+                                    <motion.button
+                                        key={key}
+                                        whileHover={{ x: 5 }}
+                                        onClick={() => {
+                                            setCurrentTheme(key);
+                                            setShowThemePicker(false);
+                                        }}
+                                        className="flex items-center gap-3 w-full px-3 py-2 rounded transition-colors"
+                                        style={{
+                                            backgroundColor: currentTheme === key ? colors.accent + '20' : 'transparent',
+                                            color: colors.newsprint
+                                        }}
+                                    >
+                                        <span className="text-xl">{theme.icon}</span>
+                                        <span className="font-serif text-sm">{theme.name}</span>
+                                        {currentTheme === key && (
+                                            <span className="ml-auto">✓</span>
+                                        )}
+                                    </motion.button>
+                                ))}
+                            </div>
                         </motion.div>
                     )}
-                </div>
-            </nav>
+                </AnimatePresence>
+            </div>
 
-            {/* Hero Section with Parallax */}
-            <div className="relative">
+            {/* Breaking News Ticker */}
             <motion.div
-                ref={targetRef}
-                className="relative min-h-screen flex items-center justify-center overflow-hidden"
+                className="fixed top-0 left-0 right-0 z-50 py-2 border-b-4"
                 style={{
-                    opacity,
-                    scale,
-                    background: `linear-gradient(135deg, ${colors.deepPurple} 0%, ${colors.royalPurple} 50%, ${colors.mediumPurple} 100%)`
+                    backgroundColor: colors.newsprint,
+                    borderColor: colors.accent,
+                    color: colors.paper
                 }}
+                animate={{ backgroundColor: colors.newsprint }}
+                transition={{ duration: 0.5 }}
             >
-                {/* Animated Background Elements */}
-                <div className="absolute inset-0 overflow-hidden">
-                    <div className="absolute w-[500px] h-[500px] bg-white/10 rounded-full blur-3xl -top-48 -left-48 animate-pulse"></div>
-                    <div className="absolute w-[500px] h-[500px] animate-pulse animation-delay-2000 rounded-full blur-3xl -bottom-48 -right-48"
-                         style={{ backgroundColor: `${colors.softPink}20` }}></div>
-                    <div className="absolute w-[300px] h-[300px] animate-pulse animation-delay-4000 rounded-full blur-3xl top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                         style={{ backgroundColor: `${colors.mediumPurple}30` }}></div>
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex items-center justify-between text-xs font-mono">
+                        <div className="flex items-center gap-4">
+                            <motion.span
+                                className="px-2 py-1 font-bold"
+                                style={{ backgroundColor: colors.accent, color: colors.paper }}
+                                animate={{ backgroundColor: colors.accent }}
+                            >
+                                BREAKING
+                            </motion.span>
+                            <motion.div
+                                animate={{ x: [0, -1000] }}
+                                transition={{ repeat: Infinity, duration: 30, ease: "linear" }}
+                                className="whitespace-nowrap"
+                            >
+                                • STUDENT JOURNAL LAUNCHES NEW PLATFORM • CALL FOR SUBMISSIONS NOW OPEN • JOIN THE STUDENT PRESS •
+                            </motion.div>
+                        </div>
+                        <span className="font-mono">{formatDate(currentTime)}</span>
+                    </div>
                 </div>
+            </motion.div>
 
-                {/* Grid Overlay */}
-                <div className="absolute inset-0" style={{
-                    backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0)',
-                    backgroundSize: '50px 50px'
-                }}></div>
-
-                {/* Hero Content */}
-                <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8 }}
-                    >
+            {/* Navigation */}
+            <motion.nav
+                className="fixed top-8 left-0 right-0 z-40 border-b shadow-sm"
+                style={{
+                    backgroundColor: colors.paper,
+                    borderColor: colors.border
+                }}
+                animate={{ backgroundColor: colors.paper }}
+                transition={{ duration: 0.5 }}
+            >
+                <div className="max-w-7xl mx-auto px-6 py-4">
+                    {/* Newspaper Nameplate */}
+                    <div className="flex justify-between items-center mb-4">
                         <motion.div
-                            initial={{ scale: 0 }}
-                            animate={{ scale: 1 }}
-                            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                            className="inline-block mb-6"
+                            className="text-xs font-mono"
+                            style={{ color: colors.byline }}
+                            animate={{ color: colors.byline }}
                         >
-                            <span className="px-4 py-2 bg-white/10 backdrop-blur-lg rounded-full text-white text-sm font-medium border border-white/20">
-                                🎓 Student Journal Platform
-                            </span>
+                            VOL. 1 • NO. 1
+                        </motion.div>
+                        <motion.div
+                            className="text-xs font-mono"
+                            style={{ color: colors.byline }}
+                            animate={{ color: colors.byline }}
+                        >
+                            {currentTime.toLocaleDateString('en-US', { weekday: 'short' })} EDITION
+                        </motion.div>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-6xl font-black tracking-[-0.05em] font-serif"
+                            style={{ color: colors.newsprint }}
+                        >
+                            <motion.span
+                                className="pb-2"
+                                style={{ borderBottomColor: colors.newsprint }}
+                                animate={{ borderBottomColor: colors.newsprint }}
+                            >
+                                THE FYI
+                            </motion.span>
                         </motion.div>
 
-                        <h1 className="text-6xl md:text-7xl font-bold text-white mb-6">
-                            For Your Information,
-                            <span className="block" style={{ color: colors.softPink }}>
-                                Your Voice Matters
-                            </span>
-                        </h1>
-
-                        <p className="text-xl text-white/80 max-w-3xl mx-auto mb-12">
-                            A student-run journal where voices are heard, ideas are shared,
-                            and knowledge is built together. Publish your articles, engage with peers,
-                            and make an impact.
-                        </p>
-
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => {
-                                    setAuthMode('register');
-                                    setShowAuth(true);
-                                }}
-                                className="px-8 py-4 rounded-xl text-white font-semibold text-lg shadow-xl transition"
-                                style={{
-                                    background: `linear-gradient(135deg, ${colors.softPink} 0%, ${colors.mediumPurple} 100%)`,
-                                }}
+                        {!auth.user && !showAuth && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="flex gap-3"
                             >
-                                Start Writing Today
-                            </motion.button>
-
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => {
-                                    const featuresSection = document.getElementById('features');
-                                    featuresSection?.scrollIntoView({ behavior: 'smooth' });
-                                }}
-                                className="px-8 py-4 bg-white/10 backdrop-blur-lg rounded-xl text-white font-semibold text-lg hover:bg-white/20 transition"
-                            >
-                                Explore Journal
-                            </motion.button>
-                        </div>
-
-                        {/* Stats */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-20">
-                            {benefits.map((benefit, index) => (
-                                <motion.div
-                                    key={index}
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: index * 0.2 }}
-                                    className="text-center"
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => {
+                                        setAuthMode('login');
+                                        setShowAuth(true);
+                                    }}
+                                    className="px-6 py-2 font-serif text-sm uppercase tracking-wider transition duration-300"
+                                    style={{
+                                        backgroundColor: colors.newsprint,
+                                        color: colors.paper
+                                    }}
+                                    animate={{
+                                        backgroundColor: colors.newsprint,
+                                        color: colors.paper
+                                    }}
                                 >
-                                    <div className="text-4xl font-bold text-white mb-2">{benefit.stat}</div>
-                                    <div className="text-white/90 font-semibold mb-1">{benefit.label}</div>
-                                    <div className="text-white/60 text-sm">{benefit.description}</div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    </motion.div>
-                </div>
+                                    Sign In
+                                </motion.button>
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => {
+                                        setAuthMode('register');
+                                        setShowAuth(true);
+                                    }}
+                                    className="px-6 py-2 border-2 font-serif text-sm uppercase tracking-wider transition duration-300"
+                                    style={{
+                                        borderColor: colors.newsprint,
+                                        color: colors.newsprint
+                                    }}
+                                    animate={{
+                                        borderColor: colors.newsprint,
+                                        color: colors.newsprint
+                                    }}
+                                >
+                                    Subscribe
+                                </motion.button>
+                            </motion.div>
+                        )}
+                    </div>
 
-                {/* Scroll Indicator */}
+                    {/* Navigation Links */}
+                    <div className="mt-4 pt-2 border-t" style={{ borderColor: colors.border }}>
+                        <ul className="flex gap-6 text-xs font-mono uppercase tracking-wider" style={{ color: colors.byline }}>
+                            <li><a href="#" className="hover:opacity-70 transition">Home</a></li>
+                            <li><a href="#features" className="hover:opacity-70 transition">Features</a></li>
+                            <li><a href="#articles" className="hover:opacity-70 transition">Articles</a></li>
+                            <li><a href="#about" className="hover:opacity-70 transition">About</a></li>
+                            <li><a href="#submit" className="hover:opacity-70 transition">Submit</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </motion.nav>
+
+            {/* Hero Section */}
+            <div className="relative pt-48">
                 <motion.div
-                    className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-                    animate={{ y: [0, 10, 0] }}
-                    transition={{ repeat: Infinity, duration: 2 }}
+                    ref={targetRef}
+                    className="relative min-h-[80vh] flex items-center justify-center overflow-hidden"
+                    style={{
+                        opacity,
+                        scale,
+                        backgroundColor: colors.paper,
+                    }}
+                    animate={{ backgroundColor: colors.paper }}
+                    transition={{ duration: 0.5 }}
                 >
-                    <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center">
-                        <div className="w-1 h-2 bg-white/50 rounded-full mt-2"></div>
+                    {/* Newspaper Texture Overlay */}
+                    <div className="absolute inset-0 opacity-5" style={{
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+                    }}></div>
+
+                    {/* Hero Content */}
+                    <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8 }}
+                        >
+                            {/* Lead Story Label */}
+                            <motion.div
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                                className="inline-block mb-6"
+                            >
+                                <motion.span
+                                    className="px-4 py-2 font-mono text-xs tracking-[0.2em]"
+                                    style={{
+                                        backgroundColor: colors.newsprint,
+                                        color: colors.paper
+                                    }}
+                                    animate={{
+                                        backgroundColor: colors.newsprint,
+                                        color: colors.paper
+                                    }}
+                                >
+                                    LEAD STORY • {currentTheme.toUpperCase()} EDITION
+                                </motion.span>
+                            </motion.div>
+
+                            {/* Main Headline */}
+                            <motion.h1
+                                className="font-serif text-7xl md:text-8xl font-black mb-4 leading-tight"
+                                style={{ color: colors.newsprint }}
+                                animate={{ color: colors.newsprint }}
+                            >
+                                For Your
+                                <motion.span
+                                    className="block italic"
+                                    style={{ color: colors.accent }}
+                                    animate={{ color: colors.accent }}
+                                >
+                                    Information
+                                </motion.span>
+                            </motion.h1>
+
+                            {/* Deck Headline */}
+                            <div className="relative mb-6">
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <motion.div
+                                        className="w-24 h-px"
+                                        style={{ backgroundColor: colors.border }}
+                                        animate={{ backgroundColor: colors.border }}
+                                    ></motion.div>
+                                </div>
+                                <motion.p
+                                    className="relative inline-block px-6 font-serif text-xl italic"
+                                    style={{
+                                        backgroundColor: colors.paper,
+                                        color: colors.byline
+                                    }}
+                                    animate={{
+                                        backgroundColor: colors.paper,
+                                        color: colors.byline
+                                    }}
+                                >
+                                    {currentTheme === 'vintage' ? 'Est. 1920' :
+                                     currentTheme === 'financial' ? 'Markets & Minds' :
+                                     currentTheme === 'broadsheet' ? 'The Student Voice' :
+                                     currentTheme === 'berliner' ? 'Die Studentenzeitung' :
+                                     currentTheme === 'guardian' ? 'Open for Ideas' :
+                                     currentTheme === 'sunset' ? 'Evening Edition' :
+                                     'The Student Voice Since 2024'}
+                                </motion.p>
+                            </div>
+
+                            {/* Lead Paragraph */}
+                            <motion.p
+                                className="text-lg max-w-3xl mx-auto mb-10 font-serif leading-relaxed"
+                                style={{ color: colors.accent2 || colors.byline }}
+                                animate={{ color: colors.accent2 || colors.byline }}
+                            >
+                                A student-run journal where voices are heard, ideas are shared,
+                                and knowledge is built together. Publish your articles, engage with peers,
+                                and make an impact on your campus community.
+                            </motion.p>
+
+                            {/* Byline */}
+                            <motion.div
+                                className="mb-8 font-serif text-sm border-t border-b py-3 inline-block px-8"
+                                style={{
+                                    color: colors.byline,
+                                    borderColor: colors.border
+                                }}
+                                animate={{
+                                    color: colors.byline,
+                                    borderColor: colors.border
+                                }}
+                            >
+                                BY THE FYI EDITORIAL BOARD | {currentTheme.toUpperCase()} EDITION
+                            </motion.div>
+
+                            {/* CTA Buttons */}
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                <motion.button
+                                    whileHover={{ scale: 1.02, backgroundColor: colors.accent }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => {
+                                        setAuthMode('register');
+                                        setShowAuth(true);
+                                    }}
+                                    className="px-8 py-4 font-serif text-lg transition duration-300 tracking-wide"
+                                    style={{
+                                        backgroundColor: colors.newsprint,
+                                        color: colors.paper
+                                    }}
+                                    animate={{
+                                        backgroundColor: colors.newsprint,
+                                        color: colors.paper
+                                    }}
+                                >
+                                    Start Writing Today
+                                </motion.button>
+
+                                <motion.button
+                                    whileHover={{ scale: 1.02, backgroundColor: colors.newsprint, color: colors.paper }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => {
+                                        const featuresSection = document.getElementById('features');
+                                        featuresSection?.scrollIntoView({ behavior: 'smooth' });
+                                    }}
+                                    className="px-8 py-4 border-2 font-serif text-lg transition duration-300"
+                                    style={{
+                                        borderColor: colors.newsprint,
+                                        color: colors.newsprint
+                                    }}
+                                    animate={{
+                                        borderColor: colors.newsprint,
+                                        color: colors.newsprint
+                                    }}
+                                >
+                                    Read the Latest
+                                </motion.button>
+                            </div>
+                        </motion.div>
                     </div>
                 </motion.div>
-            </motion.div>
             </div>
 
             {/* Features Section */}
-            <div id="features" className="relative py-24 overflow-hidden"
-                 style={{ background: colors.deepPurple }}>
-                <div className="absolute inset-0">
-                    <div className="absolute w-[800px] h-[800px] rounded-full blur-3xl -top-96 -right-96"
-                         style={{ backgroundColor: `${colors.softPink}10` }}></div>
-                    <div className="absolute w-[800px] h-[800px] rounded-full blur-3xl -bottom-96 -left-96"
-                         style={{ backgroundColor: `${colors.royalPurple}10` }}></div>
-                </div>
-
-                <div className="relative z-10 max-w-7xl mx-auto px-6">
+            <motion.div
+                id="features"
+                className="relative py-24"
+                style={{ backgroundColor: colors.aged }}
+                animate={{ backgroundColor: colors.aged }}
+                transition={{ duration: 0.5 }}
+            >
+                <div className="max-w-7xl mx-auto px-6">
+                    {/* Section Header */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
                         className="text-center mb-16"
                     >
-                        <h2 className="text-4xl font-bold text-white mb-4">
+                        <div className="inline-block mb-4">
+                            <motion.span
+                                className="font-mono text-xs tracking-[0.3em]"
+                                style={{ color: colors.byline }}
+                                animate={{ color: colors.byline }}
+                            >
+                                ——— FEATURES ———
+                            </motion.span>
+                        </div>
+                        <motion.h2
+                            className="font-serif text-5xl font-bold mb-4"
+                            style={{ color: colors.newsprint }}
+                            animate={{ color: colors.newsprint }}
+                        >
                             Everything You Need to
-                            <span className="block" style={{ color: colors.softPink }}>
+                            <motion.span
+                                className="block italic"
+                                style={{ color: colors.accent }}
+                                animate={{ color: colors.accent }}
+                            >
                                 Share Your Voice
-                            </span>
-                        </h2>
-                        <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-                            Powerful tools designed specifically for student journalists and writers.
-                        </p>
+                            </motion.span>
+                        </motion.h2>
+                        <motion.div
+                            className="w-24 h-px mx-auto"
+                            style={{ backgroundColor: colors.border }}
+                            animate={{ backgroundColor: colors.border }}
+                        ></motion.div>
                     </motion.div>
 
+                    {/* Features Grid */}
                     <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                         {features.map((feature, index) => (
                             <motion.div
@@ -285,124 +654,247 @@ export default function Welcome({ auth, recentArticles = [] }) {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
                                 whileHover={{ y: -5 }}
-                                className="bg-white/5 backdrop-blur-lg rounded-2xl p-8 border border-white/10 hover:border-white/20 transition"
+                                className="pt-6"
+                                style={{ borderTopColor: colors.newsprint, borderTopWidth: 4 }}
                             >
-                                <div className="mb-4" style={{ color: colors.softPink }}>
+                                <motion.div
+                                    className="mb-4"
+                                    style={{ color: colors.accent }}
+                                    animate={{ color: colors.accent }}
+                                >
                                     {feature.icon}
-                                </div>
-                                <h3 className="text-xl font-semibold text-white mb-2">
+                                </motion.div>
+                                <motion.h3
+                                    className="font-serif text-xl font-bold mb-2"
+                                    style={{ color: colors.newsprint }}
+                                    animate={{ color: colors.newsprint }}
+                                >
                                     {feature.title}
-                                </h3>
-                                <p className="text-gray-400">
+                                </motion.h3>
+                                <motion.p
+                                    className="font-serif text-sm leading-relaxed"
+                                    style={{ color: colors.byline }}
+                                    animate={{ color: colors.byline }}
+                                >
                                     {feature.description}
-                                </p>
+                                </motion.p>
+                                <motion.div
+                                    className="mt-4 text-xs font-mono"
+                                    style={{ color: colors.border }}
+                                    animate={{ color: colors.border }}
+                                >
+                                    ——— • ———
+                                </motion.div>
                             </motion.div>
                         ))}
                     </div>
                 </div>
-            </div>
+            </motion.div>
 
-            {/* Recent Articles Preview */}
-            <div className="relative py-24"
-                 style={{ background: colors.royalPurple }}>
+            {/* Recent Articles Section */}
+            <motion.div
+                id="articles"
+                className="relative py-24"
+                style={{ backgroundColor: colors.paper }}
+                animate={{ backgroundColor: colors.paper }}
+                transition={{ duration: 0.5 }}
+            >
                 <div className="max-w-7xl mx-auto px-6">
+                    {/* Section Header */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         className="text-center mb-12"
                     >
-                        <h2 className="text-4xl font-bold text-white mb-4">
-                            Recent <span style={{ color: colors.softPink }}>Articles</span>
-                        </h2>
-                        <p className="text-xl text-gray-300">
-                            Discover what your peers are writing about
-                        </p>
+                        <motion.span
+                            className="font-mono text-xs tracking-[0.3em]"
+                            style={{ color: colors.byline }}
+                            animate={{ color: colors.byline }}
+                        >
+                            ——— LATEST EDITION ———
+                        </motion.span>
+                        <motion.h2
+                            className="font-serif text-5xl font-bold mt-4"
+                            style={{ color: colors.newsprint }}
+                            animate={{ color: colors.newsprint }}
+                        >
+                            Today's <motion.span
+                                className="italic"
+                                style={{ color: colors.accent }}
+                                animate={{ color: colors.accent }}
+                            >Stories</motion.span>
+                        </motion.h2>
+                        <motion.div
+                            className="w-24 h-px mx-auto mt-4"
+                            style={{ backgroundColor: colors.border }}
+                            animate={{ backgroundColor: colors.border }}
+                        ></motion.div>
                     </motion.div>
 
-                    <div className="grid md:grid-cols-3 gap-6">
-                        {/* Showcase latest publicly approved articles on the landing page. */}
-                        {recentArticles.map((article, index) => (
+                    {/* Featured Articles */}
+                    <div className="grid lg:grid-cols-2 gap-8 mb-12">
+                        {featuredArticles.map((article, index) => (
                             <motion.a
                                 key={article.id ?? index}
                                 href={article.id ? `/articles/${article.id}` : '/articles'}
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
-                                whileHover={{ y: -5 }}
-                                className="block bg-white/5 backdrop-blur-lg rounded-2xl p-6 border border-white/10 hover:border-white/20 transition cursor-pointer"
+                                className="group cursor-pointer"
                             >
-                                <div className="mb-4">
-                                    <span className="px-3 py-1 rounded-full text-xs font-medium"
-                                          style={{
-                                              background: `${colors.softPink}30`,
-                                              color: colors.softPink
-                                          }}>
-                                        {article.category?.name ?? 'General'}
+                                <motion.div
+                                    className="border-b-2 pb-4 mb-4"
+                                    style={{
+                                        borderColor: colors.newsprint,
+                                        color: colors.byline
+                                    }}
+                                >
+                                    <span className="font-mono text-xs uppercase tracking-wider">
+                                        {article.category?.name ?? 'FEATURE STORY'}
+                                    </span>
+                                </motion.div>
+                                <motion.h3
+                                    className="font-serif text-3xl font-bold mb-3 group-hover:opacity-70 transition line-clamp-3"
+                                    style={{ color: colors.newsprint }}
+                                >
+                                    {article.title}
+                                </motion.h3>
+                                <motion.p
+                                    className="font-serif mb-3 italic line-clamp-2"
+                                    style={{ color: colors.byline }}
+                                >
+                                    {article.excerpt || 'An in-depth look at the stories shaping our campus community...'}
+                                </motion.p>
+                                <div className="flex justify-between items-center text-sm font-mono" style={{ color: colors.border }}>
+                                    <span>By {article.author?.name ?? 'Staff Writer'}</span>
+                                    <span>{article.published_at ? new Date(article.published_at).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric'
+                                    }) : 'Just in'}</span>
+                                </div>
+                            </motion.a>
+                        ))}
+                    </div>
+
+                    {/* Secondary Articles */}
+                    <div className="grid md:grid-cols-3 gap-6 pt-8 border-t" style={{ borderColor: colors.border }}>
+                        {secondaryArticles.map((article, index) => (
+                            <motion.a
+                                key={article.id ?? index}
+                                href={article.id ? `/articles/${article.id}` : '/articles'}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                className="group cursor-pointer"
+                            >
+                                <div className="mb-2">
+                                    <span className="font-mono text-xs uppercase" style={{ color: colors.byline }}>
+                                        {article.category?.name ?? 'NEWS'}
                                     </span>
                                 </div>
-                                <h3 className="text-xl font-semibold text-white mb-2">
+                                <motion.h3
+                                    className="font-serif text-lg font-bold mb-2 group-hover:opacity-70 transition line-clamp-2"
+                                    style={{ color: colors.newsprint }}
+                                >
                                     {article.title}
-                                </h3>
-                                <p className="text-gray-400 text-sm mb-4">
-                                    by {article.author?.name ?? 'Unknown'}
-                                </p>
-                                <div className="flex justify-between items-center text-sm text-gray-500">
-                                    <span>
-                                        {article.published_at ? new Date(article.published_at).toLocaleDateString() : 'Recently approved'}
-                                    </span>
-                                    <span>{article.comments_count ?? 0} comments</span>
+                                </motion.h3>
+                                <motion.p
+                                    className="font-serif text-sm mb-2 line-clamp-2"
+                                    style={{ color: colors.byline }}
+                                >
+                                    {article.excerpt || 'Read more about this developing story...'}
+                                </motion.p>
+                                <div className="text-xs font-mono" style={{ color: colors.border }}>
+                                    {article.published_at ? new Date(article.published_at).toLocaleDateString('en-US', {
+                                        month: 'short',
+                                        day: 'numeric'
+                                    }) : 'New'}
                                 </div>
                             </motion.a>
                         ))}
                     </div>
 
                     {recentArticles.length === 0 && (
-                        // Fallback when no articles have been approved for public visibility yet.
-                        <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-6 text-center text-gray-300">
-                            No public articles are available yet.
-                        </div>
+                        <motion.div
+                            className="border-2 p-12 text-center"
+                            style={{
+                                borderColor: colors.border,
+                                backgroundColor: colors.aged,
+                                color: colors.byline
+                            }}
+                        >
+                            <p className="font-serif text-xl italic">
+                                "The pages are still blank, but there is a miraculous feeling of the words being there, written in invisible ink and bursting to be written."
+                            </p>
+                            <p className="font-mono text-sm mt-4" style={{ color: colors.border }}>— No articles yet. Be the first to publish!</p>
+                        </motion.div>
                     )}
 
+                    {/* View All Link */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         whileInView={{ opacity: 1 }}
-                        className="text-center mt-10"
+                        className="text-center mt-12"
                     >
-                        {/* Direct link to full public listing page. */}
-                        <a
+                        <motion.a
                             href="/articles"
-                            className="inline-block px-8 py-3 rounded-lg text-white font-medium transition"
+                            className="inline-block px-8 py-3 border-2 font-mono text-sm transition duration-300 tracking-wider"
                             style={{
-                                background: `linear-gradient(135deg, ${colors.softPink} 0%, ${colors.mediumPurple} 100%)`,
+                                borderColor: colors.newsprint,
+                                color: colors.newsprint
+                            }}
+                            whileHover={{
+                                backgroundColor: colors.newsprint,
+                                color: colors.paper
                             }}
                         >
-                            View All Articles
-                        </a>
+                            VIEW ALL ARTICLES →
+                        </motion.a>
                     </motion.div>
                 </div>
-            </div>
+            </motion.div>
 
-            {/* Overview Section */}
-            <div className="relative py-24"
-                 style={{ background: colors.deepPurple }}>
+            {/* About Section */}
+            <motion.div
+                id="about"
+                className="relative py-24"
+                style={{ backgroundColor: colors.aged }}
+                animate={{ backgroundColor: colors.aged }}
+                transition={{ duration: 0.5 }}
+            >
                 <div className="max-w-7xl mx-auto px-6">
-                    <div className="grid lg:grid-cols-2 gap-12 items-center">
+                    <div className="grid lg:grid-cols-2 gap-12">
                         <motion.div
                             initial={{ opacity: 0, x: -50 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8 }}
                         >
-                            <h2 className="text-4xl font-bold text-white mb-6">
-                                📖 About <span style={{ color: colors.softPink }}>FYI</span>
-                            </h2>
-                            <div className="space-y-4 text-gray-300 text-lg">
-                                <p>
+                            <motion.span
+                                className="font-mono text-xs tracking-[0.3em]"
+                                style={{ color: colors.byline }}
+                                animate={{ color: colors.byline }}
+                            >
+                                ——— ABOUT US ———
+                            </motion.span>
+                            <motion.h2
+                                className="font-serif text-5xl font-bold mt-4 mb-6"
+                                style={{ color: colors.newsprint }}
+                                animate={{ color: colors.newsprint }}
+                            >
+                                The <motion.span
+                                    className="italic"
+                                    style={{ color: colors.accent }}
+                                    animate={{ color: colors.accent }}
+                                >Chronicle</motion.span> of Student Voices
+                            </motion.h2>
+                            <div className="prose prose-lg font-serif space-y-4" style={{ color: colors.accent2 || colors.byline }}>
+                                <p className="leading-relaxed">
                                     FYI is a student-driven journal platform that empowers writers to share their perspectives, research, and creative works with the academic community.
                                 </p>
-                                <p>
+                                <p className="leading-relaxed">
                                     Our mission is to create a space where every student voice matters—whether you're writing about science, culture, technology, or personal experiences. Through a structured peer review process, we ensure quality while nurturing new writers.
                                 </p>
-                                <p>
+                                <p className="leading-relaxed">
                                     From draft to publication, FYI guides you through every step, providing constructive feedback from editors and engagement from readers. It's more than just publishing—it's about building a community of thoughtful contributors.
                                 </p>
                             </div>
@@ -412,139 +904,302 @@ export default function Welcome({ auth, recentArticles = [] }) {
                             initial={{ opacity: 0, x: 50 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.8 }}
-                            className="grid gap-6"
+                            className="space-y-6"
                         >
-                            <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-8 border border-white/10">
-                                <h3 className="text-2xl font-bold mb-4" style={{ color: colors.softPink }}>🎯 Our Mission</h3>
-                                <p className="text-gray-300 text-lg">
-                                    To provide a supportive platform where student writers can develop their skills, share knowledge, and contribute to academic discourse through quality publications.
-                                </p>
-                            </div>
+                            {/* Mission Card */}
+                            <motion.div
+                                className="border-l-4 pl-6 py-2"
+                                style={{ borderColor: colors.newsprint }}
+                            >
+                                <motion.h3
+                                    className="font-serif text-2xl font-bold mb-2"
+                                    style={{ color: colors.newsprint }}
+                                >
+                                    🎯 Our Mission
+                                </motion.h3>
+                                <motion.p
+                                    className="font-serif italic"
+                                    style={{ color: colors.byline }}
+                                >
+                                    "To provide a supportive platform where student writers can develop their skills, share knowledge, and contribute to academic discourse through quality publications."
+                                </motion.p>
+                                <motion.p
+                                    className="font-mono text-xs mt-2"
+                                    style={{ color: colors.border }}
+                                >
+                                    — EDITORIAL MISSION STATEMENT
+                                </motion.p>
+                            </motion.div>
 
-                            <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-8 border border-white/10">
-                                <h3 className="text-2xl font-bold mb-4" style={{ color: colors.softPink }}>🌟 Our Vision</h3>
-                                <p className="text-gray-300 text-lg">
-                                    To become the leading student journal that bridges the gap between academic writing and real-world impact, fostering the next generation of thought leaders.
-                                </p>
-                            </div>
+                            {/* Vision Card */}
+                            <motion.div
+                                className="border-l-4 pl-6 py-2"
+                                style={{ borderColor: colors.accent }}
+                            >
+                                <motion.h3
+                                    className="font-serif text-2xl font-bold mb-2"
+                                    style={{ color: colors.newsprint }}
+                                >
+                                    🌟 Our Vision
+                                </motion.h3>
+                                <motion.p
+                                    className="font-serif italic"
+                                    style={{ color: colors.byline }}
+                                >
+                                    "To become the leading student journal that bridges the gap between academic writing and real-world impact, fostering the next generation of thought leaders."
+                                </motion.p>
+                                <motion.p
+                                    className="font-mono text-xs mt-2"
+                                    style={{ color: colors.border }}
+                                >
+                                    — EDITORIAL VISION
+                                </motion.p>
+                            </motion.div>
 
-                            <div className="bg-white/5 backdrop-blur-lg rounded-2xl p-8 border border-white/10">
-                                <h3 className="text-2xl font-bold mb-4" style={{ color: colors.softPink }}>📋 How It Works</h3>
-                                <ul className="space-y-2 text-gray-300">
-                                    <li className="flex items-center gap-2">
-                                        <span style={{ color: colors.softPink }}>✍️</span> Write and submit your article
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <span style={{ color: colors.softPink }}>👥</span> Receive feedback from editors
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <span style={{ color: colors.softPink }}>📢</span> Get published and engage with readers
-                                    </li>
-                                    <li className="flex items-center gap-2">
-                                        <span style={{ color: colors.softPink }}>📊</span> Track your impact
-                                    </li>
+                            {/* How It Works */}
+                            <motion.div
+                                className="border-l-4 pl-6 py-2"
+                                style={{ borderColor: colors.accent2 || colors.byline }}
+                            >
+                                <motion.h3
+                                    className="font-serif text-2xl font-bold mb-2"
+                                    style={{ color: colors.newsprint }}
+                                >
+                                    📋 How It Works
+                                </motion.h3>
+                                <ul className="space-y-2 font-serif" style={{ color: colors.byline }}>
+                                    {[
+                                        'Write and submit your article for review',
+                                        'Receive constructive feedback from editors',
+                                        'Get published in the next edition',
+                                        'Engage with readers through comments'
+                                    ].map((item, i) => (
+                                        <li key={i} className="flex items-center gap-2">
+                                            <span style={{ color: colors.accent }}>•</span> {item}
+                                        </li>
+                                    ))}
                                 </ul>
-                            </div>
+                            </motion.div>
                         </motion.div>
                     </div>
                 </div>
-            </div>
+            </motion.div>
+
+            {/* Stats Bar */}
+            <motion.div
+                className="py-12 border-y"
+                style={{
+                    backgroundColor: colors.paper,
+                    borderColor: colors.border
+                }}
+                animate={{
+                    backgroundColor: colors.paper,
+                    borderColor: colors.border
+                }}
+            >
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+                        {benefits.map((benefit, index) => (
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                className="text-center"
+                            >
+                                <motion.div
+                                    className="font-serif text-5xl font-bold mb-2"
+                                    style={{ color: colors.newsprint }}
+                                >
+                                    {benefit.stat}
+                                </motion.div>
+                                <motion.div
+                                    className="font-mono text-xs uppercase tracking-wider mb-2"
+                                    style={{ color: colors.byline }}
+                                >
+                                    {benefit.label}
+                                </motion.div>
+                                <motion.div
+                                    className="font-serif text-sm"
+                                    style={{ color: colors.accent2 || colors.byline }}
+                                >
+                                    {benefit.description}
+                                </motion.div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </motion.div>
 
             {/* CTA Section */}
-            <div className="relative py-16 overflow-hidden"
-                 style={{
-                     background: `linear-gradient(135deg, ${colors.mediumPurple} 0%, ${colors.royalPurple} 50%, ${colors.deepPurple} 100%)`
-                 }}>
-                <div className="absolute inset-0">
-                    <div className="absolute w-96 h-96 bg-white/10 rounded-full blur-3xl -top-48 -left-48"></div>
-                    <div className="absolute w-96 h-96 bg-white/10 rounded-full blur-3xl -bottom-48 -right-48"></div>
-                </div>
+            <motion.div
+                id="submit"
+                className="relative py-20"
+                style={{ backgroundColor: colors.newsprint }}
+                animate={{ backgroundColor: colors.newsprint }}
+                transition={{ duration: 0.5 }}
+            >
+                <div className="absolute inset-0 opacity-10" style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")`,
+                }}></div>
 
                 <div className="relative z-10 max-w-4xl mx-auto text-center px-6">
-                    <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        className="text-3xl md:text-4xl font-bold text-white mb-4"
-                    >
-                        Ready to Share Your Story?
-                    </motion.h2>
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="text-xl text-white/90 mb-8"
-                    >
-                        Join hundreds of student writers already publishing on FYI.
-                    </motion.p>
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
                     >
-                        <button
-                            onClick={() => {
-                                setAuthMode('register');
-                                setShowAuth(true);
-                            }}
-                            className="px-8 py-4 bg-white rounded-xl font-semibold text-lg shadow-xl hover:bg-gray-100 transition"
-                            style={{ color: colors.deepPurple }}
+                        <motion.span
+                            className="font-mono text-xs tracking-[0.3em]"
+                            style={{ color: colors.border }}
                         >
-                            Start Writing Now
-                        </button>
-                    </motion.div>
-                </div>
-            </div>
-
-            {/* Footer */}
-            <footer className="py-12 border-t border-white/10"
-                    style={{ background: colors.deepPurple }}>
-                <div className="max-w-7xl mx-auto px-6">
-                    <div className="grid md:grid-cols-4 gap-8">
-                        <div>
-                            <h3 className="text-3xl font-black tracking-tighter mb-4" style={{ color: colors.softPink }}>FYI</h3>
-                            <p className="text-gray-400">The student journal where every voice matters.</p>
-                        </div>
-                        <div>
-                            <h4 className="text-white font-semibold mb-4">For Writers</h4>
-                            <ul className="space-y-2 text-gray-400">
-                                <li><button onClick={() => {
+                            ——— CALL FOR SUBMISSIONS ———
+                        </motion.span>
+                        <motion.h2
+                            className="font-serif text-4xl md:text-5xl font-bold mt-4 mb-4"
+                            style={{ color: colors.paper }}
+                        >
+                            Ready to Share Your Story?
+                        </motion.h2>
+                        <motion.p
+                            className="font-serif text-xl italic mb-8"
+                            style={{ color: colors.border }}
+                        >
+                            Join hundreds of student writers already publishing on FYI.
+                        </motion.p>
+                        <motion.div
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            <motion.button
+                                onClick={() => {
                                     setAuthMode('register');
                                     setShowAuth(true);
-                                }} className="hover:text-white transition">Write an Article</button></li>
-                                <li><button onClick={() => {
-                                    setAuthMode('login');
-                                    setShowAuth(true);
-                                }} className="hover:text-white transition">Submission Guidelines</button></li>
-                                <li><button onClick={() => {
-                                    setAuthMode('login');
-                                    setShowAuth(true);
-                                }} className="hover:text-white transition">Editor Resources</button></li>
+                                }}
+                                className="px-10 py-4 font-serif text-lg font-bold transition duration-300 border-2 tracking-wider"
+                                style={{
+                                    backgroundColor: colors.paper,
+                                    borderColor: colors.paper,
+                                    color: colors.newsprint
+                                }}
+                                whileHover={{
+                                    backgroundColor: colors.accent,
+                                    borderColor: colors.accent,
+                                    color: colors.paper
+                                }}
+                            >
+                                Submit Your Article
+                            </motion.button>
+                        </motion.div>
+                        <motion.p
+                            className="font-mono text-xs mt-4"
+                            style={{ color: colors.border }}
+                        >
+                            Deadline for next edition: {new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                        </motion.p>
+                    </motion.div>
+                </div>
+            </motion.div>
+
+            {/* Footer */}
+            <motion.footer
+                className="py-16 border-t-4"
+                style={{
+                    backgroundColor: colors.paper,
+                    borderColor: colors.newsprint
+                }}
+                animate={{
+                    backgroundColor: colors.paper,
+                    borderColor: colors.newsprint
+                }}
+            >
+                <div className="max-w-7xl mx-auto px-6">
+                    {/* Masthead */}
+                    <div className="text-center mb-12">
+                        <motion.div
+                            className="font-serif text-7xl font-black tracking-[-0.05em] mb-2"
+                            style={{ color: colors.newsprint }}
+                        >
+                            THE FYI
+                        </motion.div>
+                        <motion.div
+                            className="font-mono text-xs tracking-[0.5em]"
+                            style={{ color: colors.byline }}
+                        >
+                            STUDENT JOURNAL • {currentTheme.toUpperCase()} EDITION
+                        </motion.div>
+                        <motion.div
+                            className="w-24 h-px mx-auto my-4"
+                            style={{ backgroundColor: colors.border }}
+                        ></motion.div>
+                        <motion.p
+                            className="font-serif text-sm italic"
+                            style={{ color: colors.accent2 || colors.byline }}
+                        >
+                            "All the news that's fit to print, by students, for students."
+                        </motion.p>
+                    </div>
+
+                    {/* Footer Columns */}
+                    <div className="grid md:grid-cols-4 gap-8 font-serif text-sm">
+                        <div>
+                            <h4 className="font-mono text-xs font-bold mb-4 tracking-wider uppercase" style={{ color: colors.newsprint }}>
+                                For Writers
+                            </h4>
+                            <ul className="space-y-2">
+                                <li><button onClick={() => { setAuthMode('register'); setShowAuth(true); }} className="transition" style={{ color: colors.byline }}>Submit an Article</button></li>
+                                <li><button onClick={() => { setAuthMode('login'); setShowAuth(true); }} className="transition" style={{ color: colors.byline }}>Writing Guidelines</button></li>
+                                <li><button onClick={() => { setAuthMode('login'); setShowAuth(true); }} className="transition" style={{ color: colors.byline }}>Editor Resources</button></li>
+                                <li><button className="transition" style={{ color: colors.byline }}>Style Guide</button></li>
                             </ul>
                         </div>
                         <div>
-                            <h4 className="text-white font-semibold mb-4">Community</h4>
-                            <ul className="space-y-2 text-gray-400">
-                                <li><button className="hover:text-white transition">About Us</button></li>
-                                <li><button className="hover:text-white transition">Meet the Editors</button></li>
-                                <li><button className="hover:text-white transition">Contact</button></li>
+                            <h4 className="font-mono text-xs font-bold mb-4 tracking-wider uppercase" style={{ color: colors.newsprint }}>
+                                Sections
+                            </h4>
+                            <ul className="space-y-2">
+                                <li><button className="transition" style={{ color: colors.byline }}>News</button></li>
+                                <li><button className="transition" style={{ color: colors.byline }}>Opinion</button></li>
+                                <li><button className="transition" style={{ color: colors.byline }}>Arts & Culture</button></li>
+                                <li><button className="transition" style={{ color: colors.byline }}>Science</button></li>
                             </ul>
                         </div>
                         <div>
-                            <h4 className="text-white font-semibold mb-4">Legal</h4>
-                            <ul className="space-y-2 text-gray-400">
-                                <li><button className="hover:text-white transition">Privacy Policy</button></li>
-                                <li><button className="hover:text-white transition">Terms of Use</button></li>
-                                <li><button className="hover:text-white transition">Code of Conduct</button></li>
+                            <h4 className="font-mono text-xs font-bold mb-4 tracking-wider uppercase" style={{ color: colors.newsprint }}>
+                                Company
+                            </h4>
+                            <ul className="space-y-2">
+                                <li><button className="transition" style={{ color: colors.byline }}>About Us</button></li>
+                                <li><button className="transition" style={{ color: colors.byline }}>Meet the Team</button></li>
+                                <li><button className="transition" style={{ color: colors.byline }}>Careers</button></li>
+                                <li><button className="transition" style={{ color: colors.byline }}>Advertise</button></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 className="font-mono text-xs font-bold mb-4 tracking-wider uppercase" style={{ color: colors.newsprint }}>
+                                Contact
+                            </h4>
+                            <ul className="space-y-2" style={{ color: colors.byline }}>
+                                <li>📍 Campus Newsroom</li>
+                                <li>📞 (555) 123-4567</li>
+                                <li>✉️ editor@fyi.edu</li>
+                                <li>📱 @thefyi</li>
                             </ul>
                         </div>
                     </div>
-                    <div className="mt-12 pt-8 border-t border-white/10 text-center text-gray-400">
-                        <p>&copy; {new Date().getFullYear()} FYI Student Journal. All rights reserved.</p>
+
+                    {/* Copyright */}
+                    <div className="mt-12 pt-8 border-t" style={{ borderColor: colors.border }}>
+                        <p className="font-mono text-xs text-center" style={{ color: colors.border }}>
+                            © {new Date().getFullYear()} THE FYI STUDENT JOURNAL. ALL RIGHTS RESERVED.
+                        </p>
+                        <p className="font-serif text-xs text-center mt-2 italic" style={{ color: colors.border }}>
+                            "The student journal where every voice matters."
+                        </p>
                     </div>
                 </div>
-            </footer>
+            </motion.footer>
 
-            {/* Auth Modal - Using the imported component */}
+            {/* Auth Modal */}
             <AuthModal
                 isOpen={showAuth}
                 onClose={() => setShowAuth(false)}
@@ -552,18 +1207,12 @@ export default function Welcome({ auth, recentArticles = [] }) {
             />
 
             <style>{`
-                @keyframes pulse {
-                    0%, 100% { opacity: 0.5; }
-                    50% { opacity: 0.8; }
+                @keyframes ticker {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-100%); }
                 }
-                .animate-pulse {
-                    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-                }
-                .animation-delay-2000 {
-                    animation-delay: 2s;
-                }
-                .animation-delay-4000 {
-                    animation-delay: 4s;
+                .animate-ticker {
+                    animation: ticker 30s linear infinite;
                 }
             `}</style>
         </>

@@ -7,20 +7,23 @@ import {
 } from '@mui/icons-material';
 import { COLORS } from '../DashboardSections/dashboardTheme';
 
+import { useTheme } from '@mui/material/styles';
+
 export default function ArticleCard({ article, bookmarked = false, onToggleBookmark }) {
+    const theme = useTheme();
     return (
         <Paper
             elevation={0}
             sx={{
                 p: 2,
                 borderRadius: 2,
-                bgcolor: 'background.paper',
-                border: `1px solid ${COLORS.mediumPurple}`,
+                bgcolor: theme.palette.background.paper,
+                border: `1px solid ${theme.palette.divider}`,
                 transition: 'all 150ms ease',
                 '&:hover': {
                     transform: 'scale(1.02)',
-                    borderColor: COLORS.royalPurple,
-                    boxShadow: '0 8px 24px rgba(55,48,107,0.12)',
+                    borderColor: theme.palette.primary.main,
+                    boxShadow: theme.shadows[4],
                 },
                 mb: 1.5,
             }}
@@ -30,32 +33,32 @@ export default function ArticleCard({ article, bookmarked = false, onToggleBookm
                     <Chip
                         label={article.category || 'General'}
                         size="small"
-                        sx={{ bgcolor: COLORS.royalPurple, color: '#fff', fontWeight: 600, borderRadius: 1.5 }}
+                        sx={{ bgcolor: theme.palette.primary.main, color: theme.palette.primary.contrastText, fontWeight: 600, borderRadius: 1.5 }}
                     />
                 </Stack>
-                <IconButton sx={{ color: COLORS.mediumPurple }} onClick={() => onToggleBookmark?.(article.id)}>
+                <IconButton sx={{ color: theme.palette.secondary.main }} onClick={() => onToggleBookmark?.(article.id)}>
                     {bookmarked ? <BookmarkRoundedIcon /> : <BookmarkBorderRoundedIcon />}
                 </IconButton>
             </Stack>
 
-            <Typography variant="h3" sx={{ color: COLORS.deepPurple, fontSize: 20, fontWeight: 600, mb: 0.8 }}>
+            <Typography variant="h3" sx={{ color: theme.palette.primary.dark, fontSize: 20, fontWeight: 600, mb: 0.8 }}>
                 {article.title}
             </Typography>
 
-            <Typography variant="body2" sx={{ color: COLORS.royalPurple, mb: 1.2 }}>
+            <Typography variant="body2" sx={{ color: theme.palette.primary.main, mb: 1.2 }}>
                 {article.excerpt || article.content?.slice(0, 120) || ''}
             </Typography>
 
-            <Stack direction="row" spacing={1.6} alignItems="center" sx={{ color: COLORS.mediumPurple }}>
+            <Stack direction="row" spacing={1.6} alignItems="center" sx={{ color: theme.palette.secondary.main }}>
                 <Stack direction="row" spacing={0.4} alignItems="center">
                     <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />
-                    <Typography variant="caption" sx={{ color: COLORS.deepPurple, fontWeight: 600 }}>
+                    <Typography variant="caption" sx={{ color: theme.palette.primary.dark, fontWeight: 600 }}>
                         1.2k
                     </Typography>
                 </Stack>
                 <Stack direction="row" spacing={0.4} alignItems="center">
                     <ChatBubbleOutlineRoundedIcon sx={{ fontSize: 16 }} />
-                    <Typography variant="caption" sx={{ color: COLORS.deepPurple, fontWeight: 600 }}>
+                    <Typography variant="caption" sx={{ color: theme.palette.primary.dark, fontWeight: 600 }}>
                         {article.commentCount || 0}
                     </Typography>
                 </Stack>
