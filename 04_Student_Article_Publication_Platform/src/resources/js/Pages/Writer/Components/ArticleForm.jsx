@@ -2,6 +2,7 @@ import axios from 'axios';
 import { router } from '@inertiajs/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import JoditEditor from '@/Components/JoditEditor';
+import { useTheme } from '@/Contexts/ThemeContext';
 
 function htmlToText(html) {
     if (!html) return '';
@@ -146,7 +147,35 @@ function toComparableLines(text) {
 }
 
 export default function ArticleForm({ article, categories = [], initialDraftVersions = [] }) {
+    const { colors } = useTheme();
+
     const isEdit = Boolean(article?.id);
+
+    const panelStyle = useMemo(
+        () => ({ backgroundColor: colors.surface, borderColor: colors.border }),
+        [colors]
+    );
+
+    const inputStyle = useMemo(
+        () => ({ backgroundColor: colors.background, borderColor: colors.border, color: colors.text }),
+        [colors]
+    );
+
+    const buttonStyle = useMemo(
+        () => ({ backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }),
+        [colors]
+    );
+
+    const codeBlockStyle = useMemo(
+        () => ({ backgroundColor: colors.background, borderColor: colors.border, color: colors.text }),
+        [colors]
+    );
+
+    const tagStyle = useMemo(
+        () => ({ backgroundColor: colors.background, borderColor: colors.border, color: colors.textSecondary }),
+        [colors]
+    );
+
 
     const [title, setTitle] = useState(article?.title ?? '');
     const [categoryId, setCategoryId] = useState(article?.category_id ?? article?.category?.id ?? '');
@@ -419,30 +448,36 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
     const submitDisabled = submitDisabledReason != null;
 
     return (
-		<div className="w-full px-2 py-4 sm:px-3 lg:px-4">
+		<div className="w-full px-2 py-4 sm:px-3 lg:px-4" style={{ color: colors.text }}>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
                 <form
                     className="space-y-4 lg:col-span-3"
                     onSubmit={(e) => e.preventDefault()}
                 >
-                    <div className="rounded-md border border-gray-200 bg-white p-4">
+                    <div className="rounded-xl border p-4" style={panelStyle}>
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                             <label className="block">
-                                <span className="text-sm font-medium text-gray-700">Title</span>
+                                <span className="text-sm font-medium" style={{ color: colors.textSecondary }}>
+                                    Title
+                                </span>
                                 <input
                                     value={title}
                                     onChange={(e) => setTitle(e.target.value)}
                                     placeholder="Article title"
-                                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                                    className="mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
+                                    style={inputStyle}
                                 />
                             </label>
 
                             <label className="block">
-                                <span className="text-sm font-medium text-gray-700">Category</span>
+                                <span className="text-sm font-medium" style={{ color: colors.textSecondary }}>
+                                    Category
+                                </span>
                                 <select
                                     value={categoryId || ''}
                                     onChange={(e) => setCategoryId(e.target.value)}
-                                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                                    className="mt-1 block w-full rounded-md border px-3 py-2 text-sm focus:outline-none"
+                                    style={inputStyle}
                                 >
                                     <option value="">(none)</option>
                                     {categories.map((c) => (
@@ -455,8 +490,10 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                         </div>
 
                         <div className="mt-4">
-                            <div className="text-sm font-medium text-gray-700">Save status</div>
-                            <div className="mt-1 text-sm text-gray-700">
+                            <div className="text-sm font-medium" style={{ color: colors.textSecondary }}>
+                                Save status
+                            </div>
+                            <div className="mt-1 text-sm" style={{ color: colors.text }}>
                                 {isEdit ? (
                                     <span>
                                         {saving ? 'Saving…' : dirty ? 'Unsaved changes (autosaves in ~10s)' : 'Saved'}
@@ -474,7 +511,8 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                                         type="button"
                                         onClick={() => runAutosave()}
                                         disabled={saving}
-                                        className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="rounded-md border px-3 py-1.5 text-sm font-medium cursor-pointer transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                                        style={buttonStyle}
                                     >
                                         Save now
                                     </button>
@@ -482,7 +520,8 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                                         type="button"
                                         onClick={() => saveSnapshot()}
                                         disabled={saving}
-                                        className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="rounded-md border px-3 py-1.5 text-sm font-medium cursor-pointer transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                                        style={buttonStyle}
                                     >
                                         Save version snapshot
                                     </button>
@@ -491,7 +530,8 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                                         onClick={submitForReview}
                                         disabled={submitDisabled}
                                         title={submitDisabledReason ?? ''}
-                                        className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                                        className="rounded-md border px-3 py-1.5 text-sm font-medium cursor-pointer transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                                        style={buttonStyle}
                                     >
                                         {submitting ? 'Submitting…' : 'Submit'}
                                     </button>
@@ -499,31 +539,41 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                             ) : null}
 
                             {submitDisabledReason && !submitError ? (
-                                <div className="mt-2 text-xs text-gray-600">Submit disabled: {submitDisabledReason}</div>
+                                <div className="mt-2 text-xs" style={{ color: colors.textSecondary }}>
+                                    Submit disabled: {submitDisabledReason}
+                                </div>
                             ) : null}
 
                             {submitError ? (
-                                <div className="mt-2 text-sm text-red-700">{submitError}</div>
+                                <div className="mt-2 text-sm" style={{ color: colors.error }}>
+                                    {submitError}
+                                </div>
                             ) : null}
                         </div>
                     </div>
 
-                    <div className="rounded-md border border-gray-200 bg-white p-4">
-                        <div className="text-sm font-medium text-gray-700">Content</div>
+                    <div className="rounded-xl border p-4" style={panelStyle}>
+                        <div className="text-sm font-medium" style={{ color: colors.textSecondary }}>
+                            Content
+                        </div>
                         <div className="mt-2">
                             <JoditEditor value={content} onChange={setContent} height="70vh" />
                         </div>
                     </div>
 
                     {isEdit ? (
-                        <div className="rounded-md border border-gray-200 bg-white p-4">
+                        <div className="rounded-xl border p-4" style={panelStyle}>
                             <div className="flex items-baseline justify-between gap-3">
                                 <h3 className="text-lg font-semibold">Version history</h3>
-                                <div className="text-sm text-gray-600">{versions.length} snapshot(s)</div>
+                                <div className="text-sm" style={{ color: colors.textSecondary }}>
+                                    {versions.length} snapshot(s)
+                                </div>
                             </div>
 
                             {versions.length === 0 ? (
-                                <p className="mt-2 text-sm text-gray-600">No snapshots yet. Use “Save version snapshot”.</p>
+                                <p className="mt-2 text-sm" style={{ color: colors.textSecondary }}>
+                                    No snapshots yet. Use “Save version snapshot”.
+                                </p>
                             ) : (
                                 <>
                                     <div className="mt-3">
@@ -535,7 +585,7 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                                             onChange={(e) => setSelectedVersionIndex(Number(e.target.value))}
                                             className="w-full"
                                         />
-                                        <div className="mt-1 text-sm text-gray-700">
+                                        <div className="mt-1 text-sm" style={{ color: colors.textSecondary }}>
                                             Selected: {selectedVersion?.created_at ? new Date(selectedVersion.created_at).toLocaleString() : 'N/A'}
                                         </div>
                                         <div className="mt-2">
@@ -546,7 +596,8 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                                                     setTitle(selectedVersion.title || '');
                                                     setContent(selectedVersion.content || '');
                                                 }}
-                                                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium"
+                                                className="rounded-md border px-3 py-1.5 text-sm font-medium transition hover:opacity-90"
+                                                style={buttonStyle}
                                             >
                                                 Restore selected version
                                             </button>
@@ -554,11 +605,18 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                                     </div>
 
                                     <div className="mt-4">
-                                        <h4 className="text-sm font-medium text-gray-700">Diff (selected → current)</h4>
+                                        <h4 className="text-sm font-medium" style={{ color: colors.textSecondary }}>
+                                            Diff (selected → current)
+                                        </h4>
                                         {!diffLines ? (
-                                            <p className="mt-2 text-sm text-gray-600">No version selected.</p>
+                                            <p className="mt-2 text-sm" style={{ color: colors.textSecondary }}>
+                                                No version selected.
+                                            </p>
                                         ) : (
-                                            <pre className="mt-2 max-h-80 overflow-auto rounded-md border border-gray-200 bg-gray-50 p-3 text-xs leading-5 text-gray-800 whitespace-pre-wrap">
+                                            <pre
+                                                className="mt-2 max-h-80 overflow-auto rounded-md border p-3 text-xs leading-5 whitespace-pre-wrap"
+                                                style={codeBlockStyle}
+                                            >
                                                 {diffLines.slice(0, 600).map((d, idx) => {
                                                     const prefix = d.type === 'added' ? '+ ' : d.type === 'removed' ? '- ' : '  ';
                                                     return (
@@ -571,7 +629,9 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                                             </pre>
                                         )}
                                         {diffLines && diffLines.length > 600 ? (
-                                            <p className="mt-2 text-sm text-gray-600">Diff truncated for readability.</p>
+                                            <p className="mt-2 text-sm" style={{ color: colors.textSecondary }}>
+                                                Diff truncated for readability.
+                                            </p>
                                         ) : null}
                                     </div>
                                 </>
@@ -581,26 +641,31 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                 </form>
 
                 <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-                    <section className="rounded-md border border-gray-200 bg-white p-4">
+                    <section className="rounded-xl border p-4" style={panelStyle}>
                         <h3 className="text-lg font-semibold">Real-Time Writing Analytics</h3>
-                        <ul className="mt-2 space-y-1 text-sm text-gray-700">
+                        <ul className="mt-2 space-y-1 text-sm" style={{ color: colors.text }}>
                             <li>Word count: {wordCount}</li>
                             <li>Read time: ~{readTimeMinutes} min</li>
                             <li>
                                 Readability (Flesch): {readabilityDisplay == null ? 'N/A' : readabilityDisplay}
                                 {readability != null && readabilityDisplay !== readability ? (
-                                    <span className="text-xs text-gray-500"> (raw: {readability})</span>
+                                    <span className="text-xs" style={{ color: colors.textSecondary }}>
+                                        {' '}
+                                        (raw: {readability})
+                                    </span>
                                 ) : null}
                             </li>
                         </ul>
                     </section>
 
-                    <section className="rounded-md border border-gray-200 bg-white p-4">
+                    <section className="rounded-xl border p-4" style={panelStyle}>
                         <h3 className="text-lg font-semibold">SEO Title Checker</h3>
                         {seoTips.length === 0 ? (
-                            <p className="mt-2 text-sm text-gray-700">Looks OK.</p>
+                            <p className="mt-2 text-sm" style={{ color: colors.text }}>
+                                Looks OK.
+                            </p>
                         ) : (
-                            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-700">
+                            <ul className="mt-2 list-disc space-y-1 pl-5 text-sm" style={{ color: colors.text }}>
                                 {seoTips.map((t) => (
                                     <li key={t}>{t}</li>
                                 ))}
@@ -608,12 +673,14 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                         )}
                     </section>
 
-                    <section className="rounded-md border border-gray-200 bg-white p-4">
+                    <section className="rounded-xl border p-4" style={panelStyle}>
                         <h3 className="text-lg font-semibold">Top Keywords (Extra)</h3>
                         {topKeywords.length === 0 ? (
-                            <p className="mt-2 text-sm text-gray-600">Not enough text yet.</p>
+                            <p className="mt-2 text-sm" style={{ color: colors.textSecondary }}>
+                                Not enough text yet.
+                            </p>
                         ) : (
-                            <ul className="mt-2 space-y-1 text-sm text-gray-700">
+                            <ul className="mt-2 space-y-1 text-sm" style={{ color: colors.text }}>
                                 {topKeywords.map((k) => (
                                     <li key={k.word}>
                                         {k.word} ({k.count})
@@ -623,24 +690,29 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                         )}
                     </section>
 
-                    <section className="rounded-md border border-gray-200 bg-white p-4">
+                    <section className="rounded-xl border p-4" style={panelStyle}>
                         <h3 className="text-lg font-semibold">Smart Category Suggestions</h3>
-                        <p className="mt-1 text-sm text-gray-600">Uses your title + content to rank categories.</p>
+                        <p className="mt-1 text-sm" style={{ color: colors.textSecondary }}>
+                            Uses your title + content to rank categories.
+                        </p>
                         <div className="mt-2">
                             <button
                                 type="button"
                                 onClick={suggestCategories}
                                 disabled={categorySuggesting || !plainText}
-                                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium"
+                                className="rounded-md border px-3 py-1.5 text-sm font-medium transition hover:opacity-90 disabled:opacity-50"
+                                style={buttonStyle}
                             >
                                 {categorySuggesting ? 'Suggesting…' : 'Suggest categories'}
                             </button>
                         </div>
 
                         {categorySuggestions.length === 0 ? (
-                            <p className="mt-2 text-sm text-gray-600">No suggestions yet.</p>
+                            <p className="mt-2 text-sm" style={{ color: colors.textSecondary }}>
+                                No suggestions yet.
+                            </p>
                         ) : (
-                            <ul className="mt-2 space-y-1 text-sm text-gray-700">
+                            <ul className="mt-2 space-y-1 text-sm" style={{ color: colors.text }}>
                                 {categorySuggestions.map((s) => (
                                     <li key={s.id} className="flex items-center justify-between gap-3">
                                         <button
@@ -650,56 +722,71 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                                         >
                                             {s.name}
                                         </button>
-                                        <span className="text-xs text-gray-500">score {s.score}</span>
+                                        <span className="text-xs" style={{ color: colors.textSecondary }}>
+                                            score {s.score}
+                                        </span>
                                     </li>
                                 ))}
                             </ul>
                         )}
                     </section>
 
-                    <section className="rounded-md border border-gray-200 bg-white p-4">
+                    <section className="rounded-xl border p-4" style={panelStyle}>
                         <h3 className="text-lg font-semibold">Plagiarism Check</h3>
-                        <p className="mt-1 text-sm text-gray-600">Compares against published articles in the DB.</p>
+                        <p className="mt-1 text-sm" style={{ color: colors.textSecondary }}>
+                            Compares against published articles in the DB.
+                        </p>
                         <div className="mt-2">
                             <button
                                 type="button"
                                 onClick={runPlagiarismCheck}
                                 disabled={plagiarismRunning || !plainText}
-                                className="rounded-md border border-gray-300 px-3 py-1.5 text-sm font-medium"
+                                className="rounded-md border px-3 py-1.5 text-sm font-medium transition hover:opacity-90 disabled:opacity-50"
+                                style={buttonStyle}
                             >
                                 {plagiarismRunning ? 'Checking…' : 'Run check'}
                             </button>
                         </div>
 
                         {plagiarism ? (
-                            <div className="mt-3 text-sm text-gray-700">
+                            <div className="mt-3 text-sm" style={{ color: colors.text }}>
                                 <div>
                                     <span className="font-medium">Indicator:</span> {plagiarismLabel}
-                                    <span className="text-gray-600"> (score: {plagiarism.score}%)</span>
+                                    <span style={{ color: colors.textSecondary }}> (score: {plagiarism.score}%)</span>
                                 </div>
                                 {typeof plagiarism.checkedAgainstCount === 'number' ? (
-                                    <div className="mt-1 text-xs text-gray-500">
+                                    <div className="mt-1 text-xs" style={{ color: colors.textSecondary }}>
                                         Checked against {plagiarism.checkedAgainstCount} published article(s)
                                     </div>
                                 ) : null}
 
                                 {Array.isArray(plagiarism.matches) && plagiarism.matches.length > 0 ? (
                                     <div className="mt-2">
-                                        <div className="text-sm font-medium text-gray-700">Top matches</div>
-                                        <ul className="mt-2 space-y-2 text-sm text-gray-700">
+                                        <div className="text-sm font-medium" style={{ color: colors.textSecondary }}>
+                                            Top matches
+                                        </div>
+                                        <ul className="mt-2 space-y-2 text-sm" style={{ color: colors.text }}>
                                             {plagiarism.matches.map((m) => (
-                                                <li key={m.article_id} className="rounded-md border border-gray-200 p-2">
+                                                <li key={m.article_id} className="rounded-md border p-2" style={panelStyle}>
                                                     <div className="flex items-baseline justify-between gap-3">
                                                         <span className="truncate font-medium">{m.title}</span>
-                                                        <span className="shrink-0 text-xs text-gray-500">{m.score}%</span>
+                                                        <span className="shrink-0 text-xs" style={{ color: colors.textSecondary }}>
+                                                            {m.score}%
+                                                        </span>
                                                     </div>
 
                                                     {Array.isArray(m.overlapPhrases) && m.overlapPhrases.length > 0 ? (
                                                         <div className="mt-2">
-                                                            <div className="text-[11px] font-semibold text-gray-600">Overlaps</div>
+                                                            <div className="text-[11px] font-semibold" style={{ color: colors.textSecondary }}>
+                                                                Overlaps
+                                                            </div>
                                                             <div className="mt-1 flex flex-wrap gap-1">
                                                                 {m.overlapPhrases.map((p) => (
-                                                                    <span key={p} className="rounded border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px]">
+                                                                    <span
+                                                                        key={p}
+                                                                        className="rounded border px-2 py-0.5 text-[11px]"
+                                                                        style={tagStyle}
+                                                                    >
                                                                         {p}
                                                                     </span>
                                                                 ))}
@@ -709,8 +796,13 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
 
                                                     {m.snippet ? (
                                                         <div className="mt-2">
-                                                            <div className="text-[11px] font-semibold text-gray-600">Evidence</div>
-                                                            <div className="mt-1 whitespace-pre-wrap rounded border border-gray-200 bg-gray-50 p-2 text-xs text-gray-800">
+                                                            <div className="text-[11px] font-semibold" style={{ color: colors.textSecondary }}>
+                                                                Evidence
+                                                            </div>
+                                                            <div
+                                                                className="mt-1 whitespace-pre-wrap rounded border p-2 text-xs"
+                                                                style={codeBlockStyle}
+                                                            >
                                                                 {m.snippet}
                                                             </div>
                                                         </div>
@@ -720,7 +812,7 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                                         </ul>
                                     </div>
                                 ) : (
-                                    <p className="mt-2 text-sm text-gray-600">
+                                    <p className="mt-2 text-sm" style={{ color: colors.textSecondary }}>
                                         {plagiarism.checkedAgainstCount === 0
                                             ? 'No published articles to compare against.'
                                             : 'No overlaps found in the checked corpus.'}
@@ -728,7 +820,9 @@ export default function ArticleForm({ article, categories = [], initialDraftVers
                                 )}
                             </div>
                         ) : (
-                            <p className="mt-2 text-sm text-gray-600">Not checked yet.</p>
+                            <p className="mt-2 text-sm" style={{ color: colors.textSecondary }}>
+                                Not checked yet.
+                            </p>
                         )}
                     </section>
                 </aside>

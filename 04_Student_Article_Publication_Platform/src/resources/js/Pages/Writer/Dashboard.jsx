@@ -1,5 +1,4 @@
 import WriterLayout from '@/Layouts/WriterLayout';
-import { Link } from '@inertiajs/react';
 import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import DraftList from './Components/DraftList';
@@ -85,17 +84,6 @@ export default function Dashboard({
                                 Drafts, submissions, deadlines, and your writing stats.
                             </p>
                         </div>
-                        <Link
-                            href={route('writer.articles.create')}
-                            className="inline-flex items-center rounded-md border px-4 py-2 text-sm font-semibold transition-opacity hover:opacity-90"
-                            style={{
-                                borderColor: colors.primary,
-                                backgroundColor: colors.primary,
-                                color: colors.background,
-                            }}
-                        >
-                            New Article
-                        </Link>
                     </div>
 
                     <div className="relative mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">
