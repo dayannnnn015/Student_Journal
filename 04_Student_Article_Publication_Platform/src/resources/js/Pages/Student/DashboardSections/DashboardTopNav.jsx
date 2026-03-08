@@ -36,16 +36,6 @@ import { useTheme } from '@/Contexts/ThemeContext';
 import ThemePicker from '@/Components/ThemePicker';
 import { initEcho } from '../../../notifications/NotificationListener';
 
-export const CATEGORIES = [
-    { id: 'technology', label: 'Technology' },
-    { id: 'science', label: 'Science' },
-    { id: 'campus', label: 'Campus Life' },
-    { id: 'opinion', label: 'Opinion' },
-    { id: 'arts', label: 'Arts' },
-    { id: 'sports', label: 'Sports' },
-    { id: 'academics', label: 'Academics' },
-    { id: 'events', label: 'Events' },
-];
 
 const NAV_ITEMS = [
     { key: 'feed', label: 'Home', icon: <AutoStories fontSize="small" /> },
@@ -54,9 +44,10 @@ const NAV_ITEMS = [
 ];
 
 export default function DashboardTopNav({
+    categories = [],
     activeView,
-    activeCategory,
     onViewChange,
+    activeCategory,
     onCategoryChange,
     search,
     onSearchChange,
@@ -67,13 +58,14 @@ export default function DashboardTopNav({
     userEmail,
     notificationCount = 0,
     onOpenMobileWidgets,
+    onReloadArticles,
 }) {
     const { colors, isDarkMode } = useTheme();
     const [menuAnchor, setMenuAnchor] = useState(null);
     const [notifAnchor, setNotifAnchor] = useState(null);
     const [searchFocused, setSearchFocused] = useState(false);
     const [categoryIndex, setCategoryIndex] = useState(0);
-    const [localCategory, setLocalCategory] = useState(activeCategory || CATEGORIES[0].id);
+    const [localCategory, setLocalCategory] = useState(activeCategory || (categories[0]?.id ?? null));
     const [mobileMenuAnchor, setMobileMenuAnchor] = useState(null);
 
     const open = Boolean(menuAnchor);
@@ -86,9 +78,9 @@ export default function DashboardTopNav({
         threshold: 0,
     });
 
-    const visibleCategories = CATEGORIES.slice(categoryIndex, categoryIndex + 4);
+    const visibleCategories = categories.slice(categoryIndex, categoryIndex + 4);
     const showLeftArrow = categoryIndex > 0;
-    const showRightArrow = categoryIndex < CATEGORIES.length - 4;
+    const showRightArrow = categoryIndex < categories.length - 4;
 
     const handleNextCategories = () => {
         if (categoryIndex < CATEGORIES.length - 4) setCategoryIndex(categoryIndex + 1);
@@ -103,6 +95,13 @@ export default function DashboardTopNav({
             setLocalCategory(activeCategory);
         }
     }, [activeCategory, localCategory]);
+
+    // Update localCategory if categories prop changes (e.g., after initial load)
+    useEffect(() => {
+        if (!localCategory && categories.length > 0) {
+            setLocalCategory(categories[0].id);
+        }
+    }, [categories, localCategory]);
 
     const handleCategorySelect = (categoryId) => {
         setLocalCategory(categoryId);
@@ -366,7 +365,12 @@ export default function DashboardTopNav({
                         {NAV_ITEMS.map((item) => (
                             <Button
                                 key={item.key}
-                                onClick={() => onViewChange(item.key)}
+                                onClick={() => {
+                                    onViewChange(item.key);
+                                    if (item.key === 'feed' && typeof onReloadArticles === 'function') {
+                                        onReloadArticles();
+                                    }
+                                }}
                                 startIcon={item.icon}
                                 sx={navButtonStyle(activeView === item.key)}
                             >
@@ -411,7 +415,7 @@ export default function DashboardTopNav({
                                     onClick={() => handleCategorySelect(category.id)}
                                     sx={categoryButtonStyle((activeCategory || localCategory) === category.id)}
                                 >
-                                    {category.label}
+                                    {category.name}
                                 </Button>
                             ))}
                         </Stack>
@@ -499,7 +503,7 @@ export default function DashboardTopNav({
                 <MenuItem onClick={() => router.visit(route('student.profile'))} sx={{ gap: 1.5, color: colors.text }}>
                     <ManageAccountsRounded fontSize="small" /> Profile
                 </MenuItem>
-                <MenuItem onClick={() => router.visit(route('student.settings'))} sx={{ gap: 1.5, color: colors.text }}>
+                <MenuItem onClick={() => router.visit('/profile')} sx={{ gap: 1.5, color: colors.text }}>
                     <ManageAccountsRounded fontSize="small" /> Settings
                 </MenuItem>
                 <Divider sx={{ borderColor: colors.border }} />

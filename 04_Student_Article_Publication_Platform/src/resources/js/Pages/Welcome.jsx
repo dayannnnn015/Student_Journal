@@ -5,6 +5,12 @@ import AuthModal from '@/Components/AuthModal';
 import ThemePicker from '@/Components/ThemePicker';
 import { useTheme } from '@/Contexts/ThemeContext';
 
+// Utility to get query params
+function getQueryParams() {
+    if (typeof window === 'undefined') return {};
+    return Object.fromEntries(new URLSearchParams(window.location.search));
+}
+
 // Animation variants for consistent, reusable animations
 const fadeInUp = {
   initial: { opacity: 0, y: 30 },
@@ -166,6 +172,19 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
     const [showRegisterPrompt, setShowRegisterPrompt] = useState({});
     const [commentErrors, setCommentErrors] = useState({});
     const commentForm = useForm({ body: '', parent_id: null });
+
+    // Auto-open AuthModal in reset mode if URL has modal=reset&token&email
+    useEffect(() => {
+        const params = getQueryParams();
+        if (
+            params.modal === 'reset' &&
+            params.token &&
+            params.email
+        ) {
+            setAuthMode('reset');
+            setShowAuth(true);
+        }
+    }, []);
 
     const handleCommentInput = (articleId, value) => {
         setCommentDrafts((prev) => ({ ...prev, [articleId]: value }));
@@ -1372,12 +1391,13 @@ export default function Welcome({ auth, recentArticles = [], landingStats = {} }
                                 links: ['About Us', 'Meet the Team', 'Careers', 'Advertise'].map(label => ({ label, action: null }))
                             },
                             {
-                                title: 'Contact',
+                                title: 'Developers',
                                 links: [
-                                    { label: '📍 Campus Newsroom', isText: true },
-                                    { label: '📞 (555) 123-4567', isText: true },
-                                    { label: '✉️ editor@fyi.edu', isText: true },
-                                    { label: '📱 @thefyi', isText: true }
+                                    { label: 'Ancheta, Diane Kaye ', isText: true },
+                                    { label: 'Bustamante, Blessed Joshua', isText: true },
+                                    { label: 'Dapdapog, Sylvester', isText: true },
+                                    { label: 'Fernandez, Ronie', isText: true },
+                                    { label: 'Rivera, Bhenny', isText: true }
                                 ]
                             }
                         ].map((column, colIndex) => (

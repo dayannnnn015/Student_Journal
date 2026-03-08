@@ -90,7 +90,7 @@ export default function ArticleShow({ article }) {
                         </p>
 
                         <div className="mt-6 whitespace-pre-wrap font-serif" style={{ color: colors.ink }}>
-                            {article?.content}
+                            <div dangerouslySetInnerHTML={{ __html: article.content }} />
                         </div>
                     </article>
 

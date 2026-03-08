@@ -52,7 +52,10 @@ const DateHeader = ({ date }) => {
     );
 };
 
-export default function Dashboard({ articles = [] }) {
+export default function Dashboard({ articles = [], categories = [] }) {
+        // State for reloading articles
+        const [localArticles, setLocalArticles] = useState(articles);
+        const [localCategories, setLocalCategories] = useState(categories);
     const { auth } = usePage().props;
     const { colors, isDarkMode } = useTheme();
     const [mode, setMode] = useState(() => {
@@ -93,8 +96,8 @@ export default function Dashboard({ articles = [] }) {
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     const sourceArticles = useMemo(() => (
-        Array.isArray(articles) ? articles : []
-    ), [articles]);
+        Array.isArray(localArticles) ? localArticles : []
+    ), [localArticles]);
 
     useEffect(() => {
         const savedIds = new Set(
@@ -110,10 +113,17 @@ export default function Dashboard({ articles = [] }) {
             const excerpt = article.excerpt || '';
             const override = articleCommentState[article.id] || {};
             const engagementOverride = articleEngagementState[article.id] || {};
+            // Always coerce comments to array
+            const comments = Array.isArray(override.comments)
+                ? override.comments
+                : Array.isArray(article.comments)
+                    ? article.comments
+                    : [];
             return {
                 ...article,
                 ...engagementOverride,
                 ...override,
+                comments,
                 excerpt,
                 readMins: estimateReadingTime(excerpt || article.title),
                 hot: index < 3,
@@ -122,6 +132,21 @@ export default function Dashboard({ articles = [] }) {
             };
         });
     }, [articleCommentState, articleEngagementState, sourceArticles]);
+
+
+    // Handler to reload articles and categories from backend
+    const handleReloadArticles = () => {
+        setActiveCategory(null);
+        setSearch('');
+        setSortBy('Newest');
+        router.reload({
+            only: ['articles', 'categories'],
+            onSuccess: (page) => {
+                setLocalArticles(page.props.articles || []);
+                setLocalCategories(page.props.categories || []);
+            },
+        });
+    };
 
     const filteredArticles = useMemo(() => {
         const keyword = search.trim().toLowerCase();
@@ -138,9 +163,14 @@ export default function Dashboard({ articles = [] }) {
             : source;
 
         if (activeCategory) {
-            list = list.filter((article) =>
-                article.category?.toLowerCase() === activeCategory.toLowerCase()
+            const selectedCategory = localCategories.find(
+                (cat) => String(cat.id) === String(activeCategory)
             );
+            if (selectedCategory) {
+                list = list.filter((article) =>
+                    (article.category?.toLowerCase?.() || '') === selectedCategory.name.toLowerCase()
+                );
+            }
         }
 
         switch (sortBy) {
@@ -158,7 +188,7 @@ export default function Dashboard({ articles = [] }) {
         }
 
         return list;
-    }, [activeNav, activeCategory, bookmarkedIds, preparedArticles, search, sortBy]);
+    }, [activeNav, activeCategory, bookmarkedIds, preparedArticles, search, sortBy, localCategories]);
 
     const trendingItems = useMemo(() =>
         [...preparedArticles]
@@ -298,13 +328,18 @@ export default function Dashboard({ articles = [] }) {
 
         setArticleCommentState((previous) => {
             const previousState = previous[articleId] || {};
-            const previousComments = previousState.comments || baseArticle?.comments || [];
+            // Always treat comments as array
+            const previousComments = Array.isArray(previousState.comments)
+                ? previousState.comments
+                : Array.isArray(baseArticle?.comments)
+                    ? baseArticle.comments
+                    : [];
             const previousCount = Number(previousState.commentCount ?? baseArticle?.commentCount ?? 0);
             let updatedComments;
             if (parentId) {
                 updatedComments = previousComments.map((c) =>
                     c.id === parentId
-                        ? { ...c, replies: [...(c.replies || []), newComment] }
+                        ? { ...c, replies: Array.isArray(c.replies) ? [...c.replies, newComment] : [newComment] }
                         : c
                 );
             } else {
@@ -322,13 +357,18 @@ export default function Dashboard({ articles = [] }) {
 
         setSelectedArticle((previous) => {
             if (!previous || previous.id !== articleId) return previous;
-            const previousComments = previous.comments || baseArticle?.comments || [];
+            // Always treat comments as array
+            const previousComments = Array.isArray(previous.comments)
+                ? previous.comments
+                : Array.isArray(baseArticle?.comments)
+                    ? baseArticle.comments
+                    : [];
             const previousCount = Number(previous.commentCount ?? baseArticle?.commentCount ?? 0);
             let updatedComments;
             if (parentId) {
                 updatedComments = previousComments.map((c) =>
                     c.id === parentId
-                        ? { ...c, replies: [...(c.replies || []), newComment] }
+                        ? { ...c, replies: Array.isArray(c.replies) ? [...c.replies, newComment] : [newComment] }
                         : c
                 );
             } else {
@@ -407,6 +447,7 @@ export default function Dashboard({ articles = [] }) {
 
                         {/* Main Navigation - TopNav */}
                         <DashboardTopNav
+                            categories={localCategories}
                             activeView={activeNav}
                             onViewChange={setActiveNav}
                             activeCategory={activeCategory}
@@ -419,6 +460,7 @@ export default function Dashboard({ articles = [] }) {
                             userId={auth?.user?.id}
                             userEmail={auth?.user?.email}
                             onOpenMobileWidgets={() => setMobileWidgetsOpen(true)}
+                            onReloadArticles={handleReloadArticles}
                         />
 
                         {/* Main Content Grid */}

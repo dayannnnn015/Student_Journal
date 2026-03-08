@@ -63,13 +63,14 @@ export default function ReviewArticle({ article, availableRoles = [] }) {
                             </Typography>
                         </Stack>
                         <Divider sx={{ mb: 2 }} />
-                        <Typography
+                        {/* <Typography
                             variant="body1"
                             component="div"
                             sx={{ color: colors.ink, lineHeight: 1.8, whiteSpace: 'pre-wrap' }}
                         >
                             {article.content}
-                        </Typography>
+                        </Typography> */}
+                        <div dangerouslySetInnerHTML={{ __html: article.content }} />
                     </CardContent>
                 </Card>
 

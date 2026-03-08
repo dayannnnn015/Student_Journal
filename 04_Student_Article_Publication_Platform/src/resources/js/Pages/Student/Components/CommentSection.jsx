@@ -433,7 +433,7 @@ export default function CommentSection({
                     </Box>
                 ) : (
                     <Stack spacing={2}>
-                        {comments.map((comment) => (
+                        {comments && comments.map((comment) => (
                             <CommentItem
                                 key={comment.id}
                                 comment={comment}

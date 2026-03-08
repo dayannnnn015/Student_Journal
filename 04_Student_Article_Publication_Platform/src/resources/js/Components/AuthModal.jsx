@@ -1,10 +1,28 @@
+
 import { Link, useForm } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useTheme } from '@/Contexts/ThemeContext';
+import ResetPasswordModal from './ResetPasswordModal';
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
+    // For email verification mode
+    const [verifyStatus, setVerifyStatus] = useState('');
+    const verifyForm = useForm({});
+
+    // Handler for resend verification email
+    const handleResendVerification = (e) => {
+        e.preventDefault();
+        verifyForm.post(route('verification.send'), {
+            onSuccess: () => setVerifyStatus('verification-link-sent'),
+        });
+    };
+
     const [mode, setMode] = useState(initialMode);
+    // For reset password mode
+    const [resetToken, setResetToken] = useState('');
+    const [resetEmail, setResetEmail] = useState('');
+    const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
     const [isFlipping, setIsFlipping] = useState(false);
     const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [resetSent, setResetSent] = useState(false);
@@ -15,6 +33,18 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
             setMode(initialMode);
             setShowForgotPassword(false);
             setResetSent(false);
+        }
+    }, [isOpen, initialMode]);
+
+    // Open ResetPasswordModal if in reset mode
+    useEffect(() => {
+        if (isOpen && initialMode === 'reset' && window.location.search) {
+            const params = new URLSearchParams(window.location.search);
+            setResetToken(params.get('token') || '');
+            setResetEmail(params.get('email') || '');
+            setShowResetPasswordModal(true);
+        } else {
+            setShowResetPasswordModal(false);
         }
     }, [isOpen, initialMode]);
 
@@ -38,20 +68,32 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
         email: '',
     });
 
+    // Reset password form (for token link)
+    const resetPasswordForm = useForm({
+        token: resetToken,
+        email: resetEmail,
+        password: '',
+        password_confirmation: '',
+    });
+
+
     const handleLogin = (e) => {
         e.preventDefault();
         loginForm.post(route('login'), {
             onSuccess: () => {
+                window.location.href = '/dashboard';
                 onClose();
                 loginForm.reset();
             },
         });
     };
 
+
     const handleRegister = (e) => {
         e.preventDefault();
         registerForm.post(route('register'), {
             onSuccess: () => {
+                window.location.href = '/dashboard';
                 onClose();
                 registerForm.reset();
             },
@@ -76,8 +118,44 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
         }, 200);
     };
 
+    // Handler for reset password submit
+
+    const handleResetPassword = (e) => {
+        e.preventDefault();
+        resetPasswordForm.post(route('password.store'), {
+            onSuccess: () => {
+                window.location.href = '/dashboard';
+            },
+            onFinish: () => resetPasswordForm.reset('password', 'password_confirmation'),
+        });
+    };
+
+    // Allow opening modal in reset mode with token/email
+    useEffect(() => {
+        if (isOpen && initialMode === 'reset' && window.location.search) {
+            const params = new URLSearchParams(window.location.search);
+            setResetToken(params.get('token') || '');
+            setResetEmail(params.get('email') || '');
+            resetPasswordForm.setData('token', params.get('token') || '');
+            resetPasswordForm.setData('email', params.get('email') || '');
+        }
+    }, [isOpen, initialMode]);
+
     if (!isOpen) {
         return null;
+    }
+    if (showResetPasswordModal) {
+        return (
+            <ResetPasswordModal
+                isOpen={showResetPasswordModal}
+                onClose={() => {
+                    setShowResetPasswordModal(false);
+                    onClose();
+                }}
+                token={resetToken}
+                email={resetEmail}
+            />
+        );
     }
 
     // Newspaper-themed decorative elements
@@ -142,7 +220,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                     }}>
                         <NewspaperDecorations />
 
-                        {!showForgotPassword ? (
+                        {!showForgotPassword && mode !== 'reset' && mode !== 'verify' ? (
                             // Main Auth Content
                             <>
                                 <EditionStamp text={mode === 'login' ? 'MEMBER EDITION' : 'FIRST EDITION'} />
@@ -390,12 +468,140 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                                     </motion.div>
                                 </div>
                             </>
+                        ) : mode === 'reset' ? (
+                            // Reset Password Content
+                            <>
+                                <EditionStamp text="RESET PASSWORD" />
+                                <div className="px-6 pt-10 pb-6">
+                                    <form onSubmit={handleResetPassword} className="space-y-4">
+                                        <div className="text-center mb-2">
+                                            <div className="text-3xl mb-2">🔑</div>
+                                            <h3 className="font-serif text-lg font-bold" style={{ color: colors.text }}>
+                                                Create a new password
+                                            </h3>
+                                            <p className="text-xs mt-1" style={{ color: colors.textSecondary }}>
+                                                Use a strong password you have not used before.
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <label className="block font-mono text-[10px] uppercase tracking-wider mb-1" style={{ color: colors.textSecondary }}>
+                                                EMAIL ADDRESS
+                                            </label>
+                                            <input
+                                                type="email"
+                                                value={resetPasswordForm.data.email}
+                                                onChange={(e) => resetPasswordForm.setData('email', e.target.value)}
+                                                className="w-full px-3 py-2 rounded border text-sm"
+                                                style={{ borderColor: resetPasswordForm.errors.email ? colors.error : colors.border, backgroundColor: colors.surface, color: colors.text }}
+                                                placeholder="reader@university.edu"
+                                                required
+                                            />
+                                            {resetPasswordForm.errors.email && (
+                                                <p className="mt-1 text-[10px]" style={{ color: colors.error }}>
+                                                    {resetPasswordForm.errors.email}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <label className="block font-mono text-[10px] uppercase tracking-wider mb-1" style={{ color: colors.textSecondary }}>
+                                                NEW PASSWORD
+                                            </label>
+                                            <input
+                                                type="password"
+                                                value={resetPasswordForm.data.password}
+                                                onChange={(e) => resetPasswordForm.setData('password', e.target.value)}
+                                                className="w-full px-3 py-2 rounded border text-sm"
+                                                style={{ borderColor: resetPasswordForm.errors.password ? colors.error : colors.border, backgroundColor: colors.surface, color: colors.text }}
+                                                placeholder="••••••••"
+                                                required
+                                            />
+                                            {resetPasswordForm.errors.password && (
+                                                <p className="mt-1 text-[10px]" style={{ color: colors.error }}>
+                                                    {resetPasswordForm.errors.password}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <label className="block font-mono text-[10px] uppercase tracking-wider mb-1" style={{ color: colors.textSecondary }}>
+                                                CONFIRM PASSWORD
+                                            </label>
+                                            <input
+                                                type="password"
+                                                value={resetPasswordForm.data.password_confirmation}
+                                                onChange={(e) => resetPasswordForm.setData('password_confirmation', e.target.value)}
+                                                className="w-full px-3 py-2 rounded border text-sm"
+                                                style={{ borderColor: resetPasswordForm.errors.password_confirmation ? colors.error : colors.border, backgroundColor: colors.surface, color: colors.text }}
+                                                placeholder="••••••••"
+                                                required
+                                            />
+                                            {resetPasswordForm.errors.password_confirmation && (
+                                                <p className="mt-1 text-[10px]" style={{ color: colors.error }}>
+                                                    {resetPasswordForm.errors.password_confirmation}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <motion.button
+                                            whileHover={{ scale: 1.01 }}
+                                            whileTap={{ scale: 0.99 }}
+                                            type="submit"
+                                            disabled={resetPasswordForm.processing}
+                                            className="w-full py-3 rounded font-serif font-bold text-sm transition-all"
+                                            style={{ backgroundColor: colors.primary, color: colors.background }}
+                                        >
+                                            {resetPasswordForm.processing ? 'Resetting...' : 'Reset Password'}
+                                        </motion.button>
+                                    </form>
+                                </div>
+                            </>
+                        ) : mode === 'verify' ? (
+                            // Email Verification Content
+                            <>
+                                <EditionStamp text="VERIFY EMAIL" />
+                                <div className="px-6 pt-10 pb-6">
+                                    <div className="border p-4 mb-4" style={{ borderColor: colors.border, backgroundColor: `${colors.aged}66` }}>
+                                        <p className="text-[11px] font-mono uppercase tracking-[0.22em]" style={{ color: colors.byline }}>
+                                            Verification Required
+                                        </p>
+                                        <h1 className="mt-2 font-serif text-2xl font-black leading-tight" style={{ color: colors.newsprint }}>
+                                            Verify your email
+                                        </h1>
+                                        <p className="mt-1 text-sm" style={{ color: colors.byline }}>
+                                            Check your inbox for the verification link. Need a new one? Send again below.
+                                        </p>
+                                    </div>
+                                    {verifyStatus === 'verification-link-sent' && (
+                                        <div className="border p-3 text-sm font-medium mb-4" style={{ borderColor: '#bbf7d0', backgroundColor: '#f0fdf4', color: '#166534' }}>
+                                            A new verification link has been sent to your email address.
+                                        </div>
+                                    )}
+                                    <form onSubmit={handleResendVerification} className="space-y-4">
+                                        <motion.button
+                                            whileHover={{ scale: 1.01 }}
+                                            whileTap={{ scale: 0.99 }}
+                                            type="submit"
+                                            disabled={verifyForm.processing}
+                                            className="w-full py-3 rounded font-serif font-bold text-sm transition-all"
+                                            style={{ backgroundColor: colors.primary, color: colors.background }}
+                                        >
+                                            {verifyForm.processing ? 'Sending...' : 'Resend Verification Email'}
+                                        </motion.button>
+                                    </form>
+                                    <div className="flex items-center justify-end border-t pt-4 mt-4" style={{ borderColor: colors.border }}>
+                                        <button
+                                            onClick={onClose}
+                                            className="text-xs font-mono uppercase tracking-[0.16em] underline"
+                                            style={{ color: colors.byline }}
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
                         ) : (
                             // Forgot Password Content
                             <>
                                 <BackButton />
                                 <EditionStamp text={resetSent ? 'RESET LINK SENT' : 'RESET PASSWORD'} />
-
                                 <div className="px-6 pt-10 pb-6">
                                     {!resetSent ? (
                                         <form onSubmit={handleForgotPassword} className="space-y-4">
@@ -408,7 +614,6 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                                                     Enter your email and we'll send you a reset link.
                                                 </p>
                                             </div>
-
                                             <div>
                                                 <label className="block font-mono text-[10px] uppercase tracking-wider mb-1" style={{ color: colors.textSecondary }}>
                                                     EMAIL ADDRESS
@@ -418,11 +623,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                                                     value={forgotPasswordForm.data.email}
                                                     onChange={(e) => forgotPasswordForm.setData('email', e.target.value)}
                                                     className="w-full px-3 py-2 rounded border text-sm"
-                                                    style={{
-                                                        borderColor: forgotPasswordForm.errors.email ? colors.error : colors.border,
-                                                        backgroundColor: colors.surface,
-                                                        color: colors.text,
-                                                    }}
+                                                    style={{ borderColor: forgotPasswordForm.errors.email ? colors.error : colors.border, backgroundColor: colors.surface, color: colors.text }}
                                                     placeholder="reader@university.edu"
                                                 />
                                                 {forgotPasswordForm.errors.email && (
@@ -431,17 +632,13 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                                                     </p>
                                                 )}
                                             </div>
-
                                             <motion.button
                                                 whileHover={{ scale: 1.01 }}
                                                 whileTap={{ scale: 0.99 }}
                                                 type="submit"
                                                 disabled={forgotPasswordForm.processing}
                                                 className="w-full py-3 rounded font-serif font-bold text-sm transition-all"
-                                                style={{
-                                                    backgroundColor: colors.primary,
-                                                    color: colors.background
-                                                }}
+                                                style={{ backgroundColor: colors.primary, color: colors.background }}
                                             >
                                                 {forgotPasswordForm.processing ? 'Sending...' : 'Send Reset Link'}
                                             </motion.button>
@@ -459,11 +656,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
                                             <p className="text-xs mt-2 mb-3" style={{ color: colors.textSecondary }}>
                                                 We've sent a reset link to:
                                             </p>
-                                            <p className="font-mono text-xs font-bold p-2 rounded" style={{
-                                                backgroundColor: colors.surface,
-                                                color: colors.accent,
-                                                wordBreak: 'break-all'
-                                            }}>
+                                            <p className="font-mono text-xs font-bold p-2 rounded" style={{ backgroundColor: colors.surface, color: colors.accent, wordBreak: 'break-all' }}>
                                                 {forgotPasswordForm.data.email}
                                             </p>
                                             <button
@@ -486,5 +679,3 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'login' }) {
         </AnimatePresence>
     );
 }
-
-//

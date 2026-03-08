@@ -1,5 +1,6 @@
 // Profile.jsx - Using same ArticleView as feed section
 import { Head, router, usePage } from '@inertiajs/react';
+import { useRef } from 'react';
 import { useMemo, useState, useEffect } from 'react';
 import axios from 'axios';
 import {
@@ -52,7 +53,7 @@ import { useTheme } from '@/Contexts/ThemeContext';
 import ThemePicker from '@/Components/ThemePicker';
 
 // Profile Header Component
-const ProfileHeader = ({ profile, stats, onEditProfile, onAvatarChange }) => {
+const ProfileHeader = ({ profile, stats, onEditProfile, onAvatarChange, avatarInputRef }) => {
     const { colors } = useTheme();
     const joinedDate = new Date(profile.joinedDate || Date.now()).toLocaleDateString('en-US', {
         month: 'long',
@@ -102,7 +103,7 @@ const ProfileHeader = ({ profile, stats, onEditProfile, onAvatarChange }) => {
                             }}
                         >
                             <PhotoCamera sx={{ color: colors.background, fontSize: 16 }} />
-                            <input type="file" hidden accept="image/*" onChange={onAvatarChange} />
+                            <input type="file" hidden accept="image/*" onChange={onAvatarChange} ref={avatarInputRef} />
                         </IconButton>
                     </Tooltip>
                 </Box>
@@ -802,6 +803,10 @@ export default function Profile({
     const [isSubmittingComment, setIsSubmittingComment] = useState(false);
     const [commentError, setCommentError] = useState('');
     const [isTogglingStar, setIsTogglingStar] = useState(false);
+    const [avatarUploading, setAvatarUploading] = useState(false);
+    const [avatarError, setAvatarError] = useState('');
+    const [avatarSuccess, setAvatarSuccess] = useState('');
+    const avatarInputRef = useRef();
     const [profile, setProfile] = useState({
         fullName: initialProfile?.fullName || auth?.user?.name || 'Student User',
         email: initialProfile?.email || auth?.user?.email || 'student@university.edu',
@@ -919,6 +924,9 @@ export default function Profile({
         const file = event.target.files[0];
         if (!file) return;
 
+        setAvatarUploading(true);
+        setAvatarError('');
+        setAvatarSuccess('');
         const formData = new FormData();
         formData.append('avatar', file);
 
@@ -931,9 +939,15 @@ export default function Profile({
 
             if (response.data.success) {
                 setProfile(prev => ({ ...prev, avatar: response.data.avatarUrl }));
+                setAvatarSuccess('Profile photo updated!');
+                if (avatarInputRef.current) avatarInputRef.current.value = '';
+            } else {
+                setAvatarError('Failed to update profile photo.');
             }
         } catch (error) {
-            console.error('Failed to upload avatar:', error);
+            setAvatarError(error.response?.data?.message || 'Failed to upload avatar.');
+        } finally {
+            setAvatarUploading(false);
         }
     };
 
@@ -1009,8 +1023,16 @@ export default function Profile({
                         profile={profile}
                         stats={stats}
                         onEditProfile={handleEditProfile}
-                        onAvatarChange={handleAvatarChange}
+                        onAvatarChange={(e) => handleAvatarChange(e)}
+                        avatarInputRef={avatarInputRef}
                     />
+                    {(avatarUploading || avatarError || avatarSuccess) && (
+                        <Box sx={{ mt: 1, mb: 2 }}>
+                            {avatarUploading && <Typography sx={{ color: colors.accent }}>Uploading photo...</Typography>}
+                            {avatarError && <Typography sx={{ color: colors.error }}>{avatarError}</Typography>}
+                            {avatarSuccess && <Typography sx={{ color: colors.accent }}>{avatarSuccess}</Typography>}
+                        </Box>
+                    )}
 
                     {/* Stats Cards */}
                     <StatsCards stats={stats} />
@@ -1128,7 +1150,12 @@ export default function Profile({
 
                     {/* Article View Modal - Using existing ArticleView and CommentSection components */}
                     <ArticleView
-                        article={selectedArticle}
+                        article={selectedArticle ? {
+                            ...selectedArticle,
+                            comments: Array.isArray(selectedArticle?.comments)
+                                ? selectedArticle.comments
+                                : (selectedArticle?.comments ? Object.values(selectedArticle.comments) : []),
+                        } : null}
                         open={modalOpen}
                         onClose={handleCloseModal}
                         onToggleStar={handleToggleStar}

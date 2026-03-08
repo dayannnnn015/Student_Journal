@@ -69,9 +69,7 @@ export default function ForgotPassword({ status }) {
                 </form>
 
                 <div className="flex items-center justify-end border-t pt-4" style={{ borderColor: colors.border }}>
-                    <Link href={route('login')} className="text-xs font-mono uppercase tracking-[0.16em] underline" style={{ color: colors.byline }}>
-                        Back to sign in
-                    </Link>
+                    {/* Login link removed: use AuthModal for login */}
                 </div>
             </div>
         </GuestLayout>
