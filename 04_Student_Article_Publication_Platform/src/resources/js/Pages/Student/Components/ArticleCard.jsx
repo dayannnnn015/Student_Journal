@@ -51,6 +51,21 @@ export default function ArticleCard({ article, bookmarked = false, onToggleBookm
 
             <Stack direction="row" spacing={1.6} alignItems="center" sx={{ color: theme.palette.secondary.main }}>
                 <Stack direction="row" spacing={0.4} alignItems="center">
+                        {/*
+                          Render article HTML content. This uses dangerouslySetInnerHTML, so ensure content is sanitized on the backend to prevent XSS.
+                        */}
+                        {article.content && (
+                            <Box
+                                sx={{
+                                    mb: 1.2,
+                                    color: theme.palette.text.primary,
+                                    fontSize: 16,
+                                    wordBreak: 'break-word',
+                                    overflowWrap: 'anywhere',
+                                }}
+                                dangerouslySetInnerHTML={{ __html: article.content }}
+                            />
+                        )}
                     <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />
                     <Typography variant="caption" sx={{ color: theme.palette.primary.dark, fontWeight: 600 }}>
                         1.2k

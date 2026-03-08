@@ -48,6 +48,17 @@ class StudentDashboardController extends Controller
             ]);
         }
 
+        // Helper to recursively map all nested replies
+        $mapComment = function ($comment) use (&$mapComment) {
+            return [
+                'id' => $comment->id,
+                'body' => $comment->body,
+                'author' => $comment->user?->name ?? 'Anonymous',
+                'created_at' => optional($comment->created_at)->toIso8601String(),
+                'replies' => $comment->replies->map(fn ($reply) => $mapComment($reply))->values(),
+            ];
+        };
+
         $articles = $articlesQuery
             ->whereNotNull('published_at')
             ->latest('published_at')
@@ -64,22 +75,15 @@ class StudentDashboardController extends Controller
                 'starCount' => (int) ($hasStarTable ? ($article->stars_count ?? 0) : 0),
                 'isStarred' => (bool) ($hasStarTable ? ($article->is_starred ?? false) : false),
                 'isSaved' => (bool) ($hasSaveTable ? ($article->is_saved ?? false) : false),
-                'comments' => $article->comments->whereNull('parent_id')->map(fn ($comment) => [
-                    'id' => $comment->id,
-                    'body' => $comment->body,
-                    'author' => $comment->user?->name ?? 'Anonymous',
-                    'created_at' => optional($comment->created_at)->toIso8601String(),
-                    'replies' => $comment->replies->map(fn ($reply) => [
-                        'id' => $reply->id,
-                        'body' => $reply->body,
-                        'author' => $reply->user?->name ?? 'Anonymous',
-                        'created_at' => optional($reply->created_at)->toIso8601String(),
-                    ]),
-                ]),
+                'comments' => $article->comments->whereNull('parent_id')->map(fn ($comment) => $mapComment($comment))->values(),
                 'author' => $article->author?->name ?? 'Editorial Team',
                 'publishedAt' => optional($article->published_at)->toIso8601String(),
                 'tags' => $article->category?->name ? [$article->category->name] : [],
             ]);
+
+        $categories = \App\Models\Category::query()
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug']);
 
         return Inertia::render('Student/Dashboard', [
             'publishedCount' => Article::query()->whereNotNull('published_at')->count(),
@@ -88,6 +92,7 @@ class StudentDashboardController extends Controller
                 ->where('published_at', '>=', $startOfMonth)
                 ->count(),
             'articles' => $articles,
+            'categories' => $categories,
         ]);
     }
 }
